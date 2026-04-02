@@ -1,0 +1,38 @@
+{
+    "users": {
+        "receiver": {
+            "name": "receiver",
+            "ip_address": "127.0.0.1",
+            "tcp_port": 5001,
+            "udp_port": 6001,
+            "subjects": [
+                "sports"
+            ]
+        },
+        "publisher": {
+            "name": "publisher",
+            "ip_address": "127.0.0.1",
+            "tcp_port": 5002,
+            "udp_port": 6002,
+            "subjects": [
+                "sports"
+            ]
+        }
+    },
+    "messages": [
+        {
+            "sender": "publisher",
+            "subject": "sports",
+            "title": "Test",
+            "text": "Hello"
+        }
+    ],
+    "comments": [
+        {
+            "sender": "receiver",
+            "subject": "sports",
+            "title": "Test",
+            "text": "Nice"
+        }
+    ]
+}

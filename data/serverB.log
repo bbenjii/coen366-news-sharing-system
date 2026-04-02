@@ -1,0 +1,177 @@
+[2026-03-31 12:28:02] UDP server listening on 127.0.0.1:5061
+[2026-03-31 12:28:02] TCP server listening on 127.0.0.1:5060
+[2026-03-31 12:28:02] Server B TCP and UDP servers are running.
+[2026-03-31 12:28:15] TCP connection from ('127.0.0.1', 49964)
+[2026-03-31 12:28:15] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-03-31 12:28:15] User registered: User(name='Bob', ip_address='127.0.0.2', tcp_port=5002, udp_port=6002, subjects=[])
+[2026-03-31 12:28:15] TCP sent: REGISTERED|3
+[2026-03-31 12:28:15] TCP connection from ('127.0.0.1', 49965)
+[2026-03-31 12:28:15] TCP received: SUBJECTS|4|Bob|sports,news
+[2026-03-31 12:28:15] Subjects updated for Bob: ['sports', 'news']
+[2026-03-31 12:28:15] TCP sent: SUBJECTS-UPDATED|4|Bob|sports,news
+[2026-03-31 12:28:15] UDP received from ('127.0.0.1', 5051): FORWARD|Alice|sports|Big Match Tonight|The finals will be played at 8 PM.
+[2026-03-31 12:28:15] Delivered MESSAGE to Bob at ('127.0.0.2', 6002): MESSAGE|Alice|sports|Big Match Tonight|The finals will be played at 8 PM.
+[2026-03-31 12:28:17] UDP received from ('127.0.0.1', 5051): FORWARD-COMMENT|Alice|sports|Big Match Tonight|Great update
+[2026-03-31 12:28:17] Delivered COMMENT to Bob at ('127.0.0.2', 6002): COMMENT|Alice|sports|Big Match Tonight|Great update
+[2026-04-02 09:42:32] TCP server listening on 127.0.0.1:5060
+[2026-04-02 09:42:32] UDP server listening on 127.0.0.1:5061
+[2026-04-02 09:42:32] Server B TCP and UDP servers are running.
+[2026-04-02 09:42:55] TCP connection from ('127.0.0.1', 51214)
+[2026-04-02 09:42:55] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 09:42:55] TCP sent: REGISTER-DENIED|3|Username already registered
+[2026-04-02 09:42:55] TCP connection from ('127.0.0.1', 51216)
+[2026-04-02 09:42:55] TCP received: REGISTER|4|Alice|127.0.0.2|5003|6003
+[2026-04-02 09:42:55] User registered: User(name='Alice', ip_address='127.0.0.2', tcp_port=5003, udp_port=6003, subjects=[])
+[2026-04-02 09:42:55] TCP sent: REGISTERED|4
+[2026-04-02 09:42:55] TCP connection from ('127.0.0.1', 51217)
+[2026-04-02 09:42:55] TCP received: SUBJECTS|104|Alice|sports,technology
+[2026-04-02 09:42:55] Subjects updated for Alice: ['sports', 'technology']
+[2026-04-02 09:42:55] TCP sent: SUBJECTS-UPDATED|104|Alice|sports,technology
+[2026-04-02 09:54:05] Server B stopped.
+[2026-04-02 09:54:50] Server B TCP and UDP servers are running.
+[2026-04-02 09:54:50] UDP server listening on 127.0.0.1:5061
+[2026-04-02 09:54:50] TCP server listening on 127.0.0.1:5060
+[2026-04-02 09:55:22] TCP connection from ('127.0.0.1', 51270)
+[2026-04-02 09:55:22] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 09:55:22] User registered: User(name='Bob', ip_address='127.0.0.2', tcp_port=5002, udp_port=6002, subjects=[])
+[2026-04-02 09:55:22] TCP sent: REGISTERED|3
+[2026-04-02 09:55:22] TCP connection from ('127.0.0.1', 51272)
+[2026-04-02 09:55:22] TCP received: REGISTER|4|Alice|127.0.0.2|5003|6003
+[2026-04-02 09:55:22] User registered: User(name='Alice', ip_address='127.0.0.2', tcp_port=5003, udp_port=6003, subjects=[])
+[2026-04-02 09:55:22] TCP sent: REGISTERED|4
+[2026-04-02 09:55:22] TCP connection from ('127.0.0.1', 51273)
+[2026-04-02 09:55:22] TCP received: SUBJECTS|104|Alice|sports,technology
+[2026-04-02 09:55:22] Subjects updated for Alice: ['sports', 'technology']
+[2026-04-02 09:55:22] TCP sent: SUBJECTS-UPDATED|104|Alice|sports,technology
+[2026-04-02 09:59:22] Server B stopped.
+[2026-04-02 10:11:52] Server B TCP and UDP servers are running.
+[2026-04-02 10:11:52] TCP server listening on 127.0.0.1:5060
+[2026-04-02 10:11:52] UDP server listening on 127.0.0.1:5061
+[2026-04-02 10:15:42] TCP connection from ('127.0.0.1', 51324)
+[2026-04-02 10:15:42] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 10:15:42] User registered: User(name='Bob', ip_address='127.0.0.2', tcp_port=5002, udp_port=6002, subjects=[])
+[2026-04-02 10:15:42] TCP sent: REGISTERED|3
+[2026-04-02 10:15:42] TCP connection from ('127.0.0.1', 51326)
+[2026-04-02 10:15:42] TCP received: REGISTER|4|Alice|127.0.0.2|5003|6003
+[2026-04-02 10:15:42] User registered: User(name='Alice', ip_address='127.0.0.2', tcp_port=5003, udp_port=6003, subjects=[])
+[2026-04-02 10:15:42] TCP sent: REGISTERED|4
+[2026-04-02 10:15:42] TCP connection from ('127.0.0.1', 51327)
+[2026-04-02 10:15:42] TCP received: SUBJECTS|104|Alice|sports,technology
+[2026-04-02 10:15:42] Subjects updated for Alice: ['sports', 'technology']
+[2026-04-02 10:15:42] TCP sent: SUBJECTS-UPDATED|104|Alice|sports,technology
+[2026-04-02 10:23:11] Server B stopped.
+[2026-04-02 10:23:40] Server B TCP and UDP servers are running.
+[2026-04-02 10:23:40] TCP server listening on 127.0.0.1:5060
+[2026-04-02 10:23:40] UDP server listening on 127.0.0.1:5061
+[2026-04-02 10:23:59] TCP connection from ('127.0.0.1', 51368)
+[2026-04-02 10:23:59] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 10:23:59] TCP sent: REGISTER-DENIED|3|Username already registered
+[2026-04-02 10:26:23] Server B stopped.
+[2026-04-02 10:26:32] Server B TCP and UDP servers are running.
+[2026-04-02 10:26:32] UDP server listening on 127.0.0.1:5061
+[2026-04-02 10:26:32] TCP server listening on 127.0.0.1:5060
+[2026-04-02 10:31:38] Server B stopped.
+[2026-04-02 10:31:46] Server B TCP and UDP servers are running.
+[2026-04-02 10:31:46] TCP server listening on 127.0.0.1:5060
+[2026-04-02 10:31:46] UDP server listening on 127.0.0.1:5061
+[2026-04-02 10:31:48] TCP connection from ('127.0.0.1', 51402)
+[2026-04-02 10:31:48] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 10:31:48] TCP sent: REGISTER-DENIED|3|Username already registered
+[2026-04-02 10:33:25] Server B stopped.
+[2026-04-02 10:33:32] TCP server listening on 127.0.0.1:5060
+[2026-04-02 10:33:32] UDP server listening on 127.0.0.1:5061
+[2026-04-02 10:33:32] Server B TCP and UDP servers are running.
+[2026-04-02 10:33:37] TCP connection from ('127.0.0.1', 51412)
+[2026-04-02 10:33:37] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 10:33:37] TCP sent: REGISTER-DENIED|3|Username already registered
+[2026-04-02 10:34:12] Server B stopped.
+[2026-04-02 10:34:22] TCP server listening on 127.0.0.1:5060
+[2026-04-02 10:34:22] Server B TCP and UDP servers are running.
+[2026-04-02 10:34:22] UDP server listening on 127.0.0.1:5061
+[2026-04-02 10:34:24] TCP connection from ('127.0.0.1', 51421)
+[2026-04-02 10:34:24] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 10:34:24] TCP sent: REGISTER-DENIED|3|Username already registered
+[2026-04-02 10:39:08] Server B stopped.
+[2026-04-02 10:39:14] TCP server listening on 127.0.0.1:5060
+[2026-04-02 10:39:14] UDP server listening on 127.0.0.1:5061
+[2026-04-02 10:39:14] Server B TCP and UDP servers are running.
+[2026-04-02 10:39:16] TCP connection from ('127.0.0.1', 51438)
+[2026-04-02 10:39:16] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 10:39:16] TCP sent: REGISTER-DENIED|3|Username already registered
+[2026-04-02 10:39:16] TCP connection from ('127.0.0.1', 51440)
+[2026-04-02 10:39:16] TCP received: REGISTER|4|Alice|127.0.0.2|5003|6003
+[2026-04-02 10:39:16] TCP sent: REGISTER-DENIED|4|Username already registered
+[2026-04-02 10:43:22] Server B stopped.
+[2026-04-02 10:43:47] Server B TCP and UDP servers are running.
+[2026-04-02 10:43:47] TCP server listening on 127.0.0.1:5060
+[2026-04-02 10:43:47] UDP server listening on 127.0.0.1:5061
+[2026-04-02 10:43:51] TCP connection from ('127.0.0.1', 51462)
+[2026-04-02 10:43:51] TCP received: REGISTER|3|Bob|127.0.0.2|5002|6002
+[2026-04-02 10:43:51] User registered: User(name='Bob', ip_address='127.0.0.2', tcp_port=5002, udp_port=6002, subjects=[])
+[2026-04-02 10:43:51] TCP sent: REGISTERED|3
+[2026-04-02 10:43:51] TCP connection from ('127.0.0.1', 51464)
+[2026-04-02 10:43:51] TCP received: REGISTER|4|Alice|127.0.0.2|5003|6003
+[2026-04-02 10:43:51] User registered: User(name='Alice', ip_address='127.0.0.2', tcp_port=5003, udp_port=6003, subjects=[])
+[2026-04-02 10:43:51] TCP sent: REGISTERED|4
+[2026-04-02 10:43:51] TCP connection from ('127.0.0.1', 51465)
+[2026-04-02 10:43:51] TCP received: SUBJECTS|104|Alice|sports,technology
+[2026-04-02 10:43:51] Subjects updated for Alice: ['sports', 'technology']
+[2026-04-02 10:43:51] TCP sent: SUBJECTS-UPDATED|104|Alice|sports,technology
+[2026-04-02 10:44:49] Server B stopped.
+[2026-04-02 11:01:11] Server B TCP and UDP servers are running.
+[2026-04-02 11:01:11] TCP server listening on 127.0.0.1:5060
+[2026-04-02 11:01:11] UDP server listening on 127.0.0.1:5061
+[2026-04-02 11:03:57] Server B stopped.
+[2026-04-02 11:06:06] Server B TCP and UDP servers are running.
+[2026-04-02 11:06:06] TCP server listening on 127.0.0.1:5060
+[2026-04-02 11:06:06] UDP server listening on 127.0.0.1:5061
+[2026-04-02 11:06:22] TCP connection from ('127.0.0.1', 51587)
+[2026-04-02 11:06:22] TCP received: REGISTER|2|Ben|127.0.0.2|7001|8001
+[2026-04-02 11:06:22] User registered: User(name='Ben', ip_address='127.0.0.2', tcp_port=7001, udp_port=8001, subjects=[])
+[2026-04-02 11:06:22] TCP sent: REGISTERED|2
+[2026-04-02 11:07:21] TCP connection from ('127.0.0.1', 51591)
+[2026-04-02 11:07:21] TCP received: SUBJECTS|5|ben|literature
+[2026-04-02 11:07:21] TCP sent: SUBJECTS-REJECTED|5|ben|literature|Invalid subjects: literature
+[2026-04-02 11:15:14] TCP connection from ('127.0.0.1', 51633)
+[2026-04-02 11:15:14] TCP received: REGISTER|9|bolu|127.0.0.2|7002|8002
+[2026-04-02 11:15:14] User registered: User(name='bolu', ip_address='127.0.0.2', tcp_port=7002, udp_port=8002, subjects=[])
+[2026-04-02 11:15:14] TCP sent: REGISTERED|9
+[2026-04-02 11:16:08] TCP connection from ('127.0.0.1', 51636)
+[2026-04-02 11:16:08] TCP received: DE-REGISTER|10|bolu
+[2026-04-02 11:16:08] User deregistered: bolu
+[2026-04-02 11:16:08] TCP sent: DE-REGISTERED|10
+[2026-04-02 11:16:25] TCP connection from ('127.0.0.1', 51637)
+[2026-04-02 11:16:25] TCP received: DE-REGISTER|11|bolu
+[2026-04-02 11:25:22] UDP received from ('127.0.0.1', 5051): FORWARD|kerry|sports|Hello world|Hello world
+[2026-04-02 11:30:45] Server B stopped.
+[2026-04-02 11:32:51] UDP server listening on 127.0.0.1:5061
+[2026-04-02 11:32:51] Server B TCP and UDP servers are running.
+[2026-04-02 11:32:51] TCP server listening on 127.0.0.1:5060
+[2026-04-02 11:36:39] UDP received from ('127.0.0.1', 5051): FORWARD|publisher|sports|Test|Hello
+[2026-04-02 11:41:13] TCP connection from ('127.0.0.1', 51700)
+[2026-04-02 11:41:13] TCP received: REGISTER|5|receiverB|127.0.0.2|7001|8001
+[2026-04-02 11:41:13] User registered: User(name='receiverB', ip_address='127.0.0.2', tcp_port=7001, udp_port=8001, subjects=[])
+[2026-04-02 11:41:13] TCP sent: REGISTERED|5
+[2026-04-02 11:41:20] TCP connection from ('127.0.0.1', 51701)
+[2026-04-02 11:41:20] TCP received: SUBJECTS|6|receiverB|sports
+[2026-04-02 11:41:20] Subjects updated for receiverB: ['sports']
+[2026-04-02 11:41:20] TCP sent: SUBJECTS-UPDATED|6|receiverB|sports
+[2026-04-02 11:41:59] UDP received from ('127.0.0.1', 5051): FORWARD|publisher|sports|Forward Test|Hello from A
+[2026-04-02 11:41:59] Delivered MESSAGE to receiverB at ('127.0.0.2', 8001): MESSAGE|publisher|sports|Forward Test|Hello from A
+[2026-04-02 11:45:35] TCP connection from ('127.0.0.1', 51709)
+[2026-04-02 11:45:35] TCP received: SUBJECTS|7|ben|sports
+[2026-04-02 11:45:35] TCP sent: SUBJECTS-REJECTED|7|ben|sports|User not found
+[2026-04-02 11:53:27] Server B stopped.
+[2026-04-02 11:54:42] Server B TCP and UDP servers are running.
+[2026-04-02 11:54:42] TCP server listening on 127.0.0.1:5060
+[2026-04-02 11:54:42] UDP server listening on 127.0.0.1:5061
+[2026-04-02 11:57:08] TCP connection from ('127.0.0.1', 51733)
+[2026-04-02 11:57:08] TCP received: SUBJECTS|4|sports|A
+[2026-04-02 11:57:08] TCP sent: SUBJECTS-REJECTED|4|sports|A|Invalid subjects: A
+[2026-04-02 12:00:41] UDP received from ('127.0.0.1', 5051): FORWARD|publisher|sports|Test|Hello
+[2026-04-02 12:00:41] Forwarded message saved: NewsMessage(sender='publisher', subject='sports', title='Test', text='Hello')
+[2026-04-02 12:02:32] UDP received from ('127.0.0.1', 5051): FORWARD-COMMENT|receiver|sports|Test|Nice
+[2026-04-02 12:11:01] Server B TCP and UDP servers are running.
+[2026-04-02 12:11:01] TCP server listening on 127.0.0.1:5060
+[2026-04-02 12:11:01] UDP server listening on 127.0.0.1:5061
+[2026-04-02 12:12:28] Server B stopped.

@@ -1,0 +1,12 @@
+{
+    "users": {},
+    "messages": [
+        {
+            "sender": "publisher",
+            "subject": "sports",
+            "title": "Test",
+            "text": "Hello"
+        }
+    ],
+    "comments": []
+}
