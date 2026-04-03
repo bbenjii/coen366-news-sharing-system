@@ -23,6 +23,11 @@ class TcpClient:
             raise OSError(f"Unexpected response from server: {res.decode()}")
         return tcp_socket
 
+    @staticmethod
+    def _send_payload(tcp_socket, payload: str):
+        print(f"[client] Sending: {payload}")
+        tcp_socket.sendall(payload.encode())
+
     def send_message(self, server_config, message):
         server_address = (server_config["bind_host"], server_config["tcp_port"])
 
@@ -30,7 +35,7 @@ class TcpClient:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
                 tcp_socket.connect(server_address)
                 print("[client] Connected to server.")
-                tcp_socket.sendall(message.encode())
+                self._send_payload(tcp_socket, message)
                 return True
         except ConnectionRefusedError:
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")
@@ -44,7 +49,7 @@ class TcpClient:
             with self._open_connection(server_config) as tcp_socket:
                 register_payload = RegisterModel(rq="1", name=client_state.name, ip_address=client_state.ip_address, tcp_port=client_state.tcp_port, udp_port=client_state.udp_port)
                 payload = protocol.serialize_register(register_payload)
-                tcp_socket.sendall(payload.encode())
+                self._send_payload(tcp_socket, payload)
 
                 res = tcp_socket.recv(1024)
                 response = res
@@ -71,7 +76,7 @@ class TcpClient:
             with self._open_connection(server_config) as tcp_socket:
                 deregister_payload = DeregisterModel(rq="1", name=client_state.name)
                 payload = protocol.serialize_deregister(deregister_payload)
-                tcp_socket.sendall(payload.encode())
+                self._send_payload(tcp_socket, payload)
 
                 res = tcp_socket.recv(1024)
                 if res:
@@ -92,7 +97,7 @@ class TcpClient:
             with self._open_connection(server_config) as tcp_socket:
                 login_payload = LoginModel(rq="1", name=name)
                 payload = protocol.serialize_login(login_payload)
-                tcp_socket.sendall(payload.encode())
+                self._send_payload(tcp_socket, payload)
 
                 res = tcp_socket.recv(1024)
                 response = res.decode()
@@ -127,7 +132,7 @@ class TcpClient:
                     udp_port=client_state.udp_port,
                 )
                 payload = protocol.serialize_update(update_payload)
-                tcp_socket.sendall(payload.encode())
+                self._send_payload(tcp_socket, payload)
 
                 res = tcp_socket.recv(1024)
                 response = res.decode()
@@ -160,7 +165,7 @@ class TcpClient:
                     subjects=client_state.subjects or [],
                 )
                 payload = protocol.serialize_subjects(subjects_payload)
-                tcp_socket.sendall(payload.encode())
+                self._send_payload(tcp_socket, payload)
 
                 res = tcp_socket.recv(1024)
                 response = res.decode()

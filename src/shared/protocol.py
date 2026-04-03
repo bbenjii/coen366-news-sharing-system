@@ -12,6 +12,7 @@ from src.shared import (
     UpdateDeniedModel,
     UpdateModel,
 )
+import ipaddress
 
 
 def _serialize_subjects(subjects: list[str]):
@@ -22,6 +23,13 @@ def _parse_subjects(encoded_subjects: str):
     if not encoded_subjects:
         return []
     return [subject for subject in encoded_subjects.split(",") if subject]
+
+
+def _parse_port(value: str):
+    try:
+        return int(value)
+    except ValueError:
+        return None
 
 def serialize_register(request: RegisterModel):
     return (
@@ -35,8 +43,8 @@ def parse_register(message):
         "request_id": int(parts[1]),
         "name": parts[2],
         "ip_address": parts[3],
-        "tcp_port": int(parts[4]),
-        "udp_port": int(parts[5]),
+        "tcp_port": _parse_port(parts[4]),
+        "udp_port": _parse_port(parts[5]),
     }
 
 
@@ -140,8 +148,8 @@ def parse_update(message):
         "request_id": int(parts[1]),
         "name": parts[2],
         "ip_address": parts[3],
-        "tcp_port": int(parts[4]),
-        "udp_port": int(parts[5]),
+        "tcp_port": _parse_port(parts[4]),
+        "udp_port": _parse_port(parts[5]),
     }
 
 
@@ -228,3 +236,15 @@ def parse_subjects_rejected(message):
         "name": parts[2],
         "subjects": _parse_subjects(parts[3] if len(parts) > 3 else ""),
     }
+
+
+def is_valid_ip_address(value: str):
+    try:
+        ipaddress.ip_address(value)
+        return True
+    except ValueError:
+        return False
+
+
+def is_valid_port(value):
+    return isinstance(value, int) and 1 <= value <= 65535

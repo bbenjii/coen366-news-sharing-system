@@ -69,6 +69,7 @@ class ClientApp:
 
             if command == "register":
                 self.state.name = self.ask_user_name()
+                # self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
                 self.state.tcp_port = self.ask_user_tcp_port()
                 self.state.udp_port = self.ask_user_udp_port()
             
@@ -120,6 +121,7 @@ class ClientApp:
         if command == "register":
             self.tcp_client.register_user(self.state.server, self.state)
         elif command == "update":
+            # self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
             self.state.tcp_port = self.ask_user_tcp_port()
             self.state.udp_port = self.ask_user_udp_port()
             update_info = self.tcp_client.update_user(self.state.server, self.state)
@@ -149,41 +151,30 @@ class ClientApp:
 
     @staticmethod
     def ask_user_tcp_port():
-        while True:
-            try:
-                port = int(input("Enter your tcp: "))
-                if 0 <= port <= 65535:
-                    return port
-            except ValueError:
-                pass  # Fall through to the error message below
-
-            print("Invalid port, please enter an integer between 0 and 65535.")
+        return input("Enter your tcp: ").strip()
 
     @staticmethod
     def ask_user_udp_port():
-        while True:
-            try:
-                port = int(input("Enter your udp port: "))
-                if 0 <= port <= 65535:
-                    return port
-            except ValueError:
-                pass  # Fall through to the error message below
-
-            print("Invalid port, please enter an integer between 0 and 65535.")
+        return input("Enter your udp port: ").strip()
             
     @staticmethod
     def ask_user_name():
         return input("Enter your name: ")
 
     @staticmethod
+    def ask_user_ip_address(default=None):
+        prompt = "Enter your IP address"
+        if default:
+            prompt += f" [{default}]"
+        prompt += ": "
+        value = input(prompt).strip()
+        return value or default
+
+    @staticmethod
     def ask_user_subjects():
         print(f"Available subjects: {', '.join(ALLOWED_SUBJECTS)}")
-        while True:
-            raw_subjects = input("Enter subjects separated by commas: ").strip().lower()
-            subjects = [subject.strip() for subject in raw_subjects.split(",") if subject.strip()]
-            if subjects and all(subject in ALLOWED_SUBJECTS for subject in subjects):
-                return subjects
-            print("Invalid subjects, please choose from the available list.")
+        raw_subjects = input("Enter subjects separated by commas: ").strip().lower()
+        return [subject.strip() for subject in raw_subjects.split(",") if subject.strip()]
 
     @staticmethod
     def ask_user_server():

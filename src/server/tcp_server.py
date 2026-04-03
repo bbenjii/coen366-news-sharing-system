@@ -59,6 +59,33 @@ class TcpServer:
             connection.sendall(payload.encode())
             return
 
+        if not protocol.is_valid_ip_address(ip_address):
+            print(f"[server] Invalid IP address for registration: {ip_address}")
+            payload = protocol.serialize_register_denied(
+                rq=register["request_id"],
+                reason="invalid_ip_address",
+            )
+            connection.sendall(payload.encode())
+            return
+
+        if not protocol.is_valid_port(tcp_port):
+            print(f"[server] Invalid TCP port for registration: {tcp_port}")
+            payload = protocol.serialize_register_denied(
+                rq=register["request_id"],
+                reason="invalid_tcp_port",
+            )
+            connection.sendall(payload.encode())
+            return
+
+        if not protocol.is_valid_port(udp_port):
+            print(f"[server] Invalid UDP port for registration: {udp_port}")
+            payload = protocol.serialize_register_denied(
+                rq=register["request_id"],
+                reason="invalid_udp_port",
+            )
+            connection.sendall(payload.encode())
+            return
+
         for registered_name, registered_user in self.registered_users.items():
             if (
                 registered_user["ip_address"] == ip_address
@@ -157,6 +184,30 @@ class TcpServer:
             print(f"[server] Update denied for unknown user {name}")
             payload = protocol.serialize_update_denied(
                 UpdateDeniedModel(rq=str(update["request_id"]), reason="user_not_found")
+            )
+            connection.sendall(payload.encode())
+            return
+
+        if not protocol.is_valid_ip_address(ip_address):
+            print(f"[server] Update denied for {name}: invalid IP address {ip_address}")
+            payload = protocol.serialize_update_denied(
+                UpdateDeniedModel(rq=str(update["request_id"]), reason="invalid_ip_address")
+            )
+            connection.sendall(payload.encode())
+            return
+
+        if not protocol.is_valid_port(tcp_port):
+            print(f"[server] Update denied for {name}: invalid TCP port {tcp_port}")
+            payload = protocol.serialize_update_denied(
+                UpdateDeniedModel(rq=str(update["request_id"]), reason="invalid_tcp_port")
+            )
+            connection.sendall(payload.encode())
+            return
+
+        if not protocol.is_valid_port(udp_port):
+            print(f"[server] Update denied for {name}: invalid UDP port {udp_port}")
+            payload = protocol.serialize_update_denied(
+                UpdateDeniedModel(rq=str(update["request_id"]), reason="invalid_udp_port")
             )
             connection.sendall(payload.encode())
             return
