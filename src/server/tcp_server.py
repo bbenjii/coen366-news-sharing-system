@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from src.shared.protocol import parse_register
+from src.shared import protocol
 from src.server.persistence import ServerPersistence
 
 
@@ -34,49 +34,67 @@ class TcpServer:
             for thread in self.client_threads:
                 thread.join()
             self.tcp_socket.close()
-
+    
+    
     def register_user(self, connection, data):
-        register = parse_register(data.decode())
+        register = protocol.parse_register(data.decode())
         print(f"[server] Register request : {register}")
         name = register["name"]
-        
-        registered_users = self.persistence.load_users()
-        if name in registered_users:
+
+        self.registered_users = self.persistence.load_users()
+        if name in self.registered_users:
             print(f"[server] User {name} already registered")
-            response = f"REGISTER-DENIED {register['request_id']} Name already in use"
-            connection.sendall(response.encode())
+            payload = protocol.serialize_register_denied(rq=register["request_id"], reason="name_already_taken")
+            connection.sendall(payload.encode())
             return
 
-        registered_users[name] = {
+        self.registered_users[name] = {
             "ip_address": register["ip_address"],
             "tcp_port": register["tcp_port"],
             "udp_port": register["udp_port"],
         }
-        self.persistence.save_users(registered_users)
-        
+        self.persistence.save_users(self.registered_users)
+
         print(f"[server] User {name} registered")
-        response = f"REGISTERED {register['request_id']}"
+        response = protocol.serialize_registered(register["request_id"])
         connection.sendall(response.encode())
-        
-    def handle_client_connection(self,connection, client_address):
+
+    def deregister_user(self, data):
+        deregister = protocol.parse_deregister(data.decode())
+        print(f"[server] Deregister request: {deregister}")
+        name = deregister["name"]
+
+        self.registered_users = self.persistence.load_users()
+        if name not in self.registered_users:
+            print(f"[server] Ignoring deregistration for unknown user {name}")
+            return
+
+        del self.registered_users[name]
+        self.persistence.save_users(self.registered_users)
+        print(f"[server] User {name} deregistered")
+
+    def handle_client_connection(self, connection, client_address):
         try:
             connection.sendall(b"hello")
 
-            while True:
-                try:
-                    data = connection.recv(1024)
-                except ConnectionResetError:
-                    print(f"[server] Connection reset by {client_address}")
-                    break
-                if not data:
-                    break
-                # print(f"[server] Received '{data.decode()}' from client")
-                
-                parts = data.strip().split() 
-                command = parts[0]
-                
-                if command == b"REGISTER":
-                    self.register_user(connection, data)
+            try:
+                data = connection.recv(1024)
+            except ConnectionResetError:
+                print(f"[server] Connection reset by {client_address}")
+                return
+
+            if not data:
+                return
+
+            parts = data.strip().split()
+            command = parts[0]
+
+            if command == b"REGISTER":
+                self.register_user(connection, data)
+            elif command == b"DE-REGISTER":
+                self.deregister_user(data)
+            else:
+                print(f"[server] Unsupported TCP command from {client_address}: {data.decode()}")
         finally:
             print(f"[server] Disconnected from {client_address}")
             connection.close()

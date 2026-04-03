@@ -27,3 +27,8 @@ class RegisterDeniedModel:
     reason: str
 
 
+@dataclass
+class DeregisterModel:
+    rq: str
+    name: str
+

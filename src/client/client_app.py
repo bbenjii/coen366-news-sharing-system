@@ -32,8 +32,17 @@ class ClientApp:
     
     
     def handle_command(self):
+        print("\n")
+        print(f"commands: /register  /deregister")
         command = input("Enter a command: ")
-        self.tcp_client.send_message(self.state.server, command)
+        command = command[1:] if command.startswith("/") else command
+        if command.lower().strip() == "register":
+            self.tcp_client.register_user(self.state.server, self.state)
+
+        elif command.lower().strip() == "deregister":
+            self.tcp_client.deregister_user(self.state.server, self.state)
+        else:
+            self.tcp_client.send_message(self.state.server, command)
         return command
 
     @staticmethod
