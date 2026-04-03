@@ -7,7 +7,7 @@ class ClientApp:
     def __init__(self, name=None, server=None):
         self.state = ClientState(
             name=name,
-            server=server or SERVER_A,
+            server=server,
             rq="REGISTER",
             ip_address="127.0.0.1",
             subjects=[],
@@ -16,6 +16,13 @@ class ClientApp:
 
     def run(self):
         print("___Client has started___")
+
+        # Set server to connect to
+        if self.state.server is None:
+            self.state.server = self.ask_user_server()
+
+        print(f"Server set to {self.state.server['name']}")
+
 
         # Set the user's name
         if self.state.name is None:
@@ -36,13 +43,6 @@ class ClientApp:
                 
         print(f"Hi, {self.state.name}!")
 
-        # Set server to connect to
-        if self.state.server is None:
-            self.state.server = self.ask_user_server()
-
-        print(f"Server set to {self.state.server['name']}")
-        
-        # self.tcp_client.register_user(self.state.server, self.state)
         
         # Register with the server
         while True:
@@ -202,7 +202,7 @@ class ClientApp:
 
 
 def main():
-    client = ClientApp(name="Ben")
+    client = ClientApp(name="Ben", server=SERVER_A)
     client.run()
 
 
