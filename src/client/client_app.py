@@ -5,7 +5,7 @@ from src.shared.config import SERVER_A, SERVER_B
 
 class ClientApp:
     def __init__(self, name=None, server=None):
-        self.state = ClientState(name=name, server=server or SERVER_A)
+        self.state = ClientState(name=name, server=server or SERVER_A, rq="REGISTER", ip_address="127.0.0.1", tcp_port=0, udp_port=1)
         self.tcp_client = TcpClient()
 
     def run(self):
@@ -23,7 +23,10 @@ class ClientApp:
             self.state.server = self.ask_user_server()
 
         print(f"Server set to {self.state.server['name']}")
-
+        
+        self.tcp_client.register_user(self.state.server, self.state)
+        
+        # Register with the server
         while True:
             self.handle_command()
     
