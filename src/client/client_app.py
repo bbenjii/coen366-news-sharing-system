@@ -66,6 +66,12 @@ class ClientApp:
             
                 if self.tcp_client.register_user(self.state.server, self.state):
                     return
+
+    def logout_user(self):
+        server = self.state.server
+        self.state = ClientState(server=server, rq="REGISTER", ip_address="127.0.0.1")
+        print("Logged out.")
+        self.authenticate_user()
     
     def print_state_summary(self):
         summary_lines = [
@@ -99,7 +105,7 @@ class ClientApp:
     def handle_command(self):
         print("\n")
         self.print_state_summary()
-        print(f"commands: /register  /update  /deregister")
+        print(f"commands: /register  /update  /deregister  /logout")
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
@@ -116,6 +122,8 @@ class ClientApp:
 
         elif command == "deregister":
             self.tcp_client.deregister_user(self.state.server, self.state)
+        elif command == "logout":
+            self.logout_user()
         else:
             self.tcp_client.send_message(self.state.server, command)
         return command
