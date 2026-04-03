@@ -1,11 +1,17 @@
 from src.client.state import ClientState
 from src.client.tcp_client import TcpClient
-from src.shared.config import SERVER_A, SERVER_B
+from src.shared.config import ALLOWED_SUBJECTS, SERVER_A, SERVER_B
 
 
 class ClientApp:
     def __init__(self, name=None, server=None):
-        self.state = ClientState(name=name, server=server or SERVER_A, rq="REGISTER", ip_address="127.0.0.1")
+        self.state = ClientState(
+            name=name,
+            server=server or SERVER_A,
+            rq="REGISTER",
+            ip_address="127.0.0.1",
+            subjects=[],
+        )
         self.tcp_client = TcpClient()
 
     def run(self):
@@ -26,6 +32,7 @@ class ClientApp:
                 self.state.ip_address = login_info["ip_address"]
                 self.state.tcp_port = login_info["tcp_port"]
                 self.state.udp_port = login_info["udp_port"]
+                self.state.subjects = login_info["subjects"]
                 
         print(f"Hi, {self.state.name}!")
 
@@ -57,6 +64,7 @@ class ClientApp:
                 self.state.ip_address = login_info["ip_address"]
                 self.state.tcp_port = login_info["tcp_port"]
                 self.state.udp_port = login_info["udp_port"]
+                self.state.subjects = login_info["subjects"]
                 return
 
             if command == "register":
@@ -69,7 +77,7 @@ class ClientApp:
 
     def logout_user(self):
         server = self.state.server
-        self.state = ClientState(server=server, rq="REGISTER", ip_address="127.0.0.1")
+        self.state = ClientState(server=server, rq="REGISTER", ip_address="127.0.0.1", subjects=[])
         print("Logged out.")
         self.authenticate_user()
     
@@ -80,6 +88,7 @@ class ClientApp:
             ("IP", self.state.ip_address or "Not set"),
             ("TCP", str(self.state.tcp_port) if self.state.tcp_port is not None else "Not set"),
             ("UDP", str(self.state.udp_port) if self.state.udp_port is not None else "Not set"),
+            ("Subjects", ", ".join(self.state.subjects or []) or "Not set"),
         ]
         endpoint = (
             f"{self.state.ip_address}:{self.state.tcp_port} (TCP) | "
@@ -105,7 +114,7 @@ class ClientApp:
     def handle_command(self):
         print("\n")
         self.print_state_summary()
-        print(f"commands: /register  /update  /deregister  /logout")
+        print(f"commands: /register  /update  /subjects  /deregister  /logout")
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
@@ -119,6 +128,16 @@ class ClientApp:
                 self.state.ip_address = update_info["ip_address"]
                 self.state.tcp_port = update_info["tcp_port"]
                 self.state.udp_port = update_info["udp_port"]
+                self.state.subjects = update_info["subjects"]
+        elif command == "subjects":
+            previous_subjects = list(self.state.subjects or [])
+            self.state.subjects = self.ask_user_subjects()
+            subjects_info = self.tcp_client.update_subjects(self.state.server, self.state)
+            if subjects_info is not None:
+                self.state.name = subjects_info["name"]
+                self.state.subjects = subjects_info["subjects"]
+            else:
+                self.state.subjects = previous_subjects
 
         elif command == "deregister":
             self.tcp_client.deregister_user(self.state.server, self.state)
@@ -155,6 +174,16 @@ class ClientApp:
     @staticmethod
     def ask_user_name():
         return input("Enter your name: ")
+
+    @staticmethod
+    def ask_user_subjects():
+        print(f"Available subjects: {', '.join(ALLOWED_SUBJECTS)}")
+        while True:
+            raw_subjects = input("Enter subjects separated by commas: ").strip().lower()
+            subjects = [subject.strip() for subject in raw_subjects.split(",") if subject.strip()]
+            if subjects and all(subject in ALLOWED_SUBJECTS for subject in subjects):
+                return subjects
+            print("Invalid subjects, please choose from the available list.")
 
     @staticmethod
     def ask_user_server():

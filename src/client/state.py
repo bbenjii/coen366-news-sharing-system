@@ -9,3 +9,4 @@ class ClientState:
     ip_address: str | None = None
     tcp_port: int | None = None
     udp_port: int | None = None
+    subjects: list[str] | None = None

@@ -5,6 +5,8 @@ from src.shared import protocol
 from src.shared.models import (
     LoginConfirmedModel,
     LoginDeniedModel,
+    SubjectsRejectedModel,
+    SubjectsUpdatedModel,
     UpdateConfirmedModel,
     UpdateDeniedModel,
 )
@@ -92,6 +94,7 @@ class TcpServer:
             "ip_address": ip_address,
             "tcp_port": tcp_port,
             "udp_port": udp_port,
+            "subjects": [],
         }
         self.persistence.save_users(self.registered_users)
 
@@ -135,6 +138,7 @@ class TcpServer:
                 ip_address=user["ip_address"],
                 tcp_port=user["tcp_port"],
                 udp_port=user["udp_port"],
+                subjects=user.get("subjects", []),
             )
         )
         print(f"[server] Login confirmed for {name}")
@@ -199,6 +203,7 @@ class TcpServer:
             "ip_address": ip_address,
             "tcp_port": tcp_port,
             "udp_port": udp_port,
+            "subjects": self.registered_users[name].get("subjects", []),
         }
         self.persistence.save_users(self.registered_users)
         print(f"[server] User {name} updated")
@@ -209,6 +214,51 @@ class TcpServer:
                 ip_address=ip_address,
                 tcp_port=tcp_port,
                 udp_port=udp_port,
+                subjects=self.registered_users[name].get("subjects", []),
+            )
+        )
+        connection.sendall(payload.encode())
+
+    def update_subjects(self, connection, data):
+        subjects_request = protocol.parse_subjects(data.decode())
+        print(f"[server] Subjects request: {subjects_request}")
+        name = subjects_request["name"]
+        subjects = subjects_request["subjects"]
+
+        self.registered_users = self.persistence.load_users()
+        if name not in self.registered_users:
+            print(f"[server] Subjects update rejected for unknown user {name}")
+            payload = protocol.serialize_subjects_rejected(
+                SubjectsRejectedModel(
+                    rq=str(subjects_request["request_id"]),
+                    name=name,
+                    subjects=subjects,
+                )
+            )
+            connection.sendall(payload.encode())
+            return
+
+        allowed_subjects = set(protocol.ALLOWED_SUBJECTS)
+        if not subjects or any(subject not in allowed_subjects for subject in subjects):
+            print(f"[server] Subjects update rejected for {name}: invalid subjects {subjects}")
+            payload = protocol.serialize_subjects_rejected(
+                SubjectsRejectedModel(
+                    rq=str(subjects_request["request_id"]),
+                    name=name,
+                    subjects=subjects,
+                )
+            )
+            connection.sendall(payload.encode())
+            return
+
+        self.registered_users[name]["subjects"] = subjects
+        self.persistence.save_users(self.registered_users)
+        print(f"[server] Subjects updated for {name}: {subjects}")
+        payload = protocol.serialize_subjects_updated(
+            SubjectsUpdatedModel(
+                rq=str(subjects_request["request_id"]),
+                name=name,
+                subjects=subjects,
             )
         )
         connection.sendall(payload.encode())
@@ -235,6 +285,8 @@ class TcpServer:
                 self.login_user(connection, data)
             elif command == b"UPDATE":
                 self.update_user(connection, data)
+            elif command == b"SUBJECTS":
+                self.update_subjects(connection, data)
             elif command == b"DE-REGISTER":
                 self.deregister_user(data)
             else:

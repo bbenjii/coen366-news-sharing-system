@@ -1,8 +1,18 @@
 {
   "Ben": {
     "ip_address": "127.0.0.1",
+    "subjects": [
+      "security",
+      "sports",
+      "health"
+    ],
     "tcp_port": 99,
     "udp_port": 88
+  },
+  "John": {
+    "ip_address": "127.0.0.1",
+    "tcp_port": 11,
+    "udp_port": 22
   },
   "codex_deregister_test": {
     "ip_address": "127.0.0.1",

@@ -1,5 +1,17 @@
 bind_host = "localhost"
 
+ALLOWED_SUBJECTS = [
+    "ai",
+    "networking",
+    "security",
+    "software",
+    "systems",
+    "sports",
+    "chess",
+    "health",
+    "travel"
+]
+
 SERVER_A = {
     "name": "Server A",
     "bind_host": bind_host,

@@ -1,4 +1,4 @@
-from src.shared.config import SERVER_A, SERVER_B
+from src.shared.config import ALLOWED_SUBJECTS, SERVER_A, SERVER_B
 from src.shared.models import (
     DeregisterModel,
     LoginConfirmedModel,
@@ -7,6 +7,9 @@ from src.shared.models import (
     RegisterDeniedModel,
     RegisterModel,
     RegisteredModel,
+    SubjectsModel,
+    SubjectsRejectedModel,
+    SubjectsUpdatedModel,
     UpdateConfirmedModel,
     UpdateDeniedModel,
     UpdateModel,
@@ -15,6 +18,7 @@ from src.shared.models import (
 __all__ = [
     "SERVER_A",
     "SERVER_B",
+    "ALLOWED_SUBJECTS",
     "DeregisterModel",
     "LoginConfirmedModel",
     "LoginDeniedModel",
@@ -22,6 +26,9 @@ __all__ = [
     "RegisterDeniedModel",
     "RegisterModel",
     "RegisteredModel",
+    "SubjectsModel",
+    "SubjectsRejectedModel",
+    "SubjectsUpdatedModel",
     "UpdateConfirmedModel",
     "UpdateDeniedModel",
     "UpdateModel",

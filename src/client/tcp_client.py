@@ -2,7 +2,13 @@ import socket
 
 from src.client.state import ClientState
 from src.shared import protocol
-from src.shared.models import DeregisterModel, LoginModel, RegisterModel, UpdateModel
+from src.shared.models import (
+    DeregisterModel,
+    LoginModel,
+    RegisterModel,
+    SubjectsModel,
+    UpdateModel,
+)
 
 class TcpClient:
     @staticmethod
@@ -138,6 +144,42 @@ class TcpClient:
                     return None
 
                 return protocol.parse_update_confirmed(response)
+        except ConnectionRefusedError:
+            server_address = (server_config["bind_host"], server_config["tcp_port"])
+            print(f"[client] Could not connect to {server_config['name']} at {server_address}")
+        except OSError as exc:
+            print(f"[client] TCP send failed: {exc}")
+        return None
+
+    def update_subjects(self, server_config, client_state: ClientState):
+        try:
+            with self._open_connection(server_config) as tcp_socket:
+                subjects_payload = SubjectsModel(
+                    rq="1",
+                    name=client_state.name,
+                    subjects=client_state.subjects or [],
+                )
+                payload = protocol.serialize_subjects(subjects_payload)
+                tcp_socket.sendall(payload.encode())
+
+                res = tcp_socket.recv(1024)
+                response = res.decode()
+                print(f"[client] Received response from server: {response}")
+                command = response.strip().split()[0]
+
+                if command == "SUBJECTS-REJECTED":
+                    subjects_rejected = protocol.parse_subjects_rejected(response)
+                    print(
+                        "[client] Subjects update rejected: "
+                        f"{subjects_rejected['subjects'] or 'invalid request'}"
+                    )
+                    return None
+
+                if command != "SUBJECTS-UPDATED":
+                    print(f"[client] Unexpected subjects response: {response}")
+                    return None
+
+                return protocol.parse_subjects_updated(response)
         except ConnectionRefusedError:
             server_address = (server_config["bind_host"], server_config["tcp_port"])
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")

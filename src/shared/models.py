@@ -46,6 +46,7 @@ class LoginConfirmedModel:
     ip_address: str
     tcp_port: int
     udp_port: int
+    subjects: list[str]
 
 
 @dataclass
@@ -70,9 +71,31 @@ class UpdateConfirmedModel:
     ip_address: str
     tcp_port: int
     udp_port: int
+    subjects: list[str]
 
 
 @dataclass
 class UpdateDeniedModel:
     rq: str
     reason: str
+
+
+@dataclass
+class SubjectsModel:
+    rq: str
+    name: str
+    subjects: list[str]
+
+
+@dataclass
+class SubjectsUpdatedModel:
+    rq: str
+    name: str
+    subjects: list[str]
+
+
+@dataclass
+class SubjectsRejectedModel:
+    rq: str
+    name: str
+    subjects: list[str]
