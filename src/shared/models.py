@@ -52,3 +52,27 @@ class LoginConfirmedModel:
 class LoginDeniedModel:
     rq: str
     reason: str
+
+
+@dataclass
+class UpdateModel:
+    rq: str
+    name: str
+    ip_address: str
+    tcp_port: int
+    udp_port: int
+
+
+@dataclass
+class UpdateConfirmedModel:
+    rq: str
+    name: str
+    ip_address: str
+    tcp_port: int
+    udp_port: int
+
+
+@dataclass
+class UpdateDeniedModel:
+    rq: str
+    reason: str

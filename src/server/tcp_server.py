@@ -2,7 +2,12 @@ import socket
 import threading
 
 from src.shared import protocol
-from src.shared.models import LoginConfirmedModel, LoginDeniedModel
+from src.shared.models import (
+    LoginConfirmedModel,
+    LoginDeniedModel,
+    UpdateConfirmedModel,
+    UpdateDeniedModel,
+)
 from src.server.persistence import ServerPersistence
 
 
@@ -135,6 +140,79 @@ class TcpServer:
         print(f"[server] Login confirmed for {name}")
         connection.sendall(payload.encode())
 
+    def update_user(self, connection, data):
+        update = protocol.parse_update(data.decode())
+        print(f"[server] Update request: {update}")
+        name = update["name"]
+        ip_address = update["ip_address"]
+        tcp_port = update["tcp_port"]
+        udp_port = update["udp_port"]
+
+        self.registered_users = self.persistence.load_users()
+        if name not in self.registered_users:
+            print(f"[server] Update denied for unknown user {name}")
+            payload = protocol.serialize_update_denied(
+                UpdateDeniedModel(rq=str(update["request_id"]), reason="user_not_found")
+            )
+            connection.sendall(payload.encode())
+            return
+
+        for registered_name, registered_user in self.registered_users.items():
+            if registered_name == name:
+                continue
+
+            if (
+                registered_user["ip_address"] == ip_address
+                and registered_user["tcp_port"] == tcp_port
+            ):
+                print(
+                    f"[server] Update denied, TCP endpoint already used by {registered_name}: "
+                    f"{ip_address}:{tcp_port}"
+                )
+                payload = protocol.serialize_update_denied(
+                    UpdateDeniedModel(
+                        rq=str(update["request_id"]),
+                        reason="tcp_endpoint_in_use",
+                    )
+                )
+                connection.sendall(payload.encode())
+                return
+
+            if (
+                registered_user["ip_address"] == ip_address
+                and registered_user["udp_port"] == udp_port
+            ):
+                print(
+                    f"[server] Update denied, UDP endpoint already used by {registered_name}: "
+                    f"{ip_address}:{udp_port}"
+                )
+                payload = protocol.serialize_update_denied(
+                    UpdateDeniedModel(
+                        rq=str(update["request_id"]),
+                        reason="udp_endpoint_in_use",
+                    )
+                )
+                connection.sendall(payload.encode())
+                return
+
+        self.registered_users[name] = {
+            "ip_address": ip_address,
+            "tcp_port": tcp_port,
+            "udp_port": udp_port,
+        }
+        self.persistence.save_users(self.registered_users)
+        print(f"[server] User {name} updated")
+        payload = protocol.serialize_update_confirmed(
+            UpdateConfirmedModel(
+                rq=str(update["request_id"]),
+                name=name,
+                ip_address=ip_address,
+                tcp_port=tcp_port,
+                udp_port=udp_port,
+            )
+        )
+        connection.sendall(payload.encode())
+
     def handle_client_connection(self, connection, client_address):
         try:
             connection.sendall(b"hello")
@@ -155,6 +233,8 @@ class TcpServer:
                 self.register_user(connection, data)
             elif command == b"LOGIN":
                 self.login_user(connection, data)
+            elif command == b"UPDATE":
+                self.update_user(connection, data)
             elif command == b"DE-REGISTER":
                 self.deregister_user(data)
             else:

@@ -67,13 +67,52 @@ class ClientApp:
                 if self.tcp_client.register_user(self.state.server, self.state):
                     return
     
+    def print_state_summary(self):
+        summary_lines = [
+            ("Server", self.state.server["name"] if self.state.server else "Not set"),
+            ("User", self.state.name or "Not set"),
+            ("IP", self.state.ip_address or "Not set"),
+            ("TCP", str(self.state.tcp_port) if self.state.tcp_port is not None else "Not set"),
+            ("UDP", str(self.state.udp_port) if self.state.udp_port is not None else "Not set"),
+        ]
+        endpoint = (
+            f"{self.state.ip_address}:{self.state.tcp_port} (TCP) | "
+            f"{self.state.ip_address}:{self.state.udp_port} (UDP)"
+            if self.state.ip_address is not None
+            and self.state.tcp_port is not None
+            and self.state.udp_port is not None
+            else "Not available"
+        )
+        content_lines = [f"{label:<8}: {value}" for label, value in summary_lines]
+        # content_lines.append(f"Endpoint: {endpoint}")
+        inner_width = max(len("Client State"), *(len(line) for line in content_lines))
+        border = "+" + "-" * (inner_width + 2) + "+"
+
+        print(border)
+        print(f"| {'Client State':^{inner_width}} |")
+        print(border)
+        for line in content_lines:
+            print(f"| {line:<{inner_width}} |")
+        print(border)
+        
+        
     def handle_command(self):
         print("\n")
-        print(f"commands: /register  /deregister")
+        self.print_state_summary()
+        print(f"commands: /register  /update  /deregister")
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
             self.tcp_client.register_user(self.state.server, self.state)
+        elif command == "update":
+            self.state.tcp_port = self.ask_user_tcp_port()
+            self.state.udp_port = self.ask_user_udp_port()
+            update_info = self.tcp_client.update_user(self.state.server, self.state)
+            if update_info is not None:
+                self.state.name = update_info["name"]
+                self.state.ip_address = update_info["ip_address"]
+                self.state.tcp_port = update_info["tcp_port"]
+                self.state.udp_port = update_info["udp_port"]
 
         elif command == "deregister":
             self.tcp_client.deregister_user(self.state.server, self.state)

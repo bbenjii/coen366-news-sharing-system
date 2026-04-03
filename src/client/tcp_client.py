@@ -2,7 +2,7 @@ import socket
 
 from src.client.state import ClientState
 from src.shared import protocol
-from src.shared.models import DeregisterModel, LoginModel, RegisterModel
+from src.shared.models import DeregisterModel, LoginModel, RegisterModel, UpdateModel
 
 class TcpClient:
     @staticmethod
@@ -103,6 +103,41 @@ class TcpClient:
                     return None
 
                 return protocol.parse_login_confirmed(response)
+        except ConnectionRefusedError:
+            server_address = (server_config["bind_host"], server_config["tcp_port"])
+            print(f"[client] Could not connect to {server_config['name']} at {server_address}")
+        except OSError as exc:
+            print(f"[client] TCP send failed: {exc}")
+        return None
+
+    def update_user(self, server_config, client_state: ClientState):
+        try:
+            with self._open_connection(server_config) as tcp_socket:
+                update_payload = UpdateModel(
+                    rq="1",
+                    name=client_state.name,
+                    ip_address=client_state.ip_address,
+                    tcp_port=client_state.tcp_port,
+                    udp_port=client_state.udp_port,
+                )
+                payload = protocol.serialize_update(update_payload)
+                tcp_socket.sendall(payload.encode())
+
+                res = tcp_socket.recv(1024)
+                response = res.decode()
+                print(f"[client] Received response from server: {response}")
+                command = response.strip().split()[0]
+
+                if command == "UPDATE-DENIED":
+                    update_denied = protocol.parse_update_denied(response)
+                    print(f"[client] Update denied: {update_denied['reason']}")
+                    return None
+
+                if command != "UPDATE-CONFIRMED":
+                    print(f"[client] Unexpected update response: {response}")
+                    return None
+
+                return protocol.parse_update_confirmed(response)
         except ConnectionRefusedError:
             server_address = (server_config["bind_host"], server_config["tcp_port"])
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")

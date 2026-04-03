@@ -7,6 +7,9 @@ from src.shared.models import (
     RegisterDeniedModel,
     RegisterModel,
     RegisteredModel,
+    UpdateConfirmedModel,
+    UpdateDeniedModel,
+    UpdateModel,
 )
 
 __all__ = [
@@ -19,4 +22,7 @@ __all__ = [
     "RegisterDeniedModel",
     "RegisterModel",
     "RegisteredModel",
+    "UpdateConfirmedModel",
+    "UpdateDeniedModel",
+    "UpdateModel",
 ]
