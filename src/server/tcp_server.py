@@ -40,6 +40,9 @@ class TcpServer:
         register = protocol.parse_register(data.decode())
         print(f"[server] Register request : {register}")
         name = register["name"]
+        ip_address = register["ip_address"]
+        tcp_port = register["tcp_port"]
+        udp_port = register["udp_port"]
 
         self.registered_users = self.persistence.load_users()
         if name in self.registered_users:
@@ -48,10 +51,41 @@ class TcpServer:
             connection.sendall(payload.encode())
             return
 
+        for registered_name, registered_user in self.registered_users.items():
+            if (
+                registered_user["ip_address"] == ip_address
+                and registered_user["tcp_port"] == tcp_port
+            ):
+                print(
+                    f"[server] TCP endpoint already used by {registered_name}: "
+                    f"{ip_address}:{tcp_port}"
+                )
+                payload = protocol.serialize_register_denied(
+                    rq=register["request_id"],
+                    reason="tcp_endpoint_in_use",
+                )
+                connection.sendall(payload.encode())
+                return
+
+            if (
+                registered_user["ip_address"] == ip_address
+                and registered_user["udp_port"] == udp_port
+            ):
+                print(
+                    f"[server] UDP endpoint already used by {registered_name}: "
+                    f"{ip_address}:{udp_port}"
+                )
+                payload = protocol.serialize_register_denied(
+                    rq=register["request_id"],
+                    reason="udp_endpoint_in_use",
+                )
+                connection.sendall(payload.encode())
+                return
+
         self.registered_users[name] = {
-            "ip_address": register["ip_address"],
-            "tcp_port": register["tcp_port"],
-            "udp_port": register["udp_port"],
+            "ip_address": ip_address,
+            "tcp_port": tcp_port,
+            "udp_port": udp_port,
         }
         self.persistence.save_users(self.registered_users)
 
