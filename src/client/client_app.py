@@ -5,7 +5,7 @@ from src.shared.config import SERVER_A, SERVER_B
 
 class ClientApp:
     def __init__(self, name=None, server=None):
-        self.state = ClientState(name=name, server=server or SERVER_A, rq="REGISTER", ip_address="127.0.0.1", tcp_port=0, udp_port=1)
+        self.state = ClientState(name=name, server=server or SERVER_A, rq="REGISTER", ip_address="127.0.0.1")
         self.tcp_client = TcpClient()
 
     def run(self):
@@ -13,9 +13,20 @@ class ClientApp:
 
         # Set the user's name
         if self.state.name is None:
-            self.state.name = self.ask_user_name()
-            print(f"Name set to {self.state.name}")
-
+            # self.state.name = self.ask_user_name()
+            # print(f"Name set to {self.state.name}")
+            self.authenticate_user()
+        else:
+            login_info = self.tcp_client.login_user(self.state.server, self.state.name)
+            if login_info is None:
+                print(f"Failed to login, please authenticate yourself")
+                self.authenticate_user()
+            else:
+                self.state.name = login_info["name"]
+                self.state.ip_address = login_info["ip_address"]
+                self.state.tcp_port = login_info["tcp_port"]
+                self.state.udp_port = login_info["udp_port"]
+                
         print(f"Hi, {self.state.name}!")
 
         # Set server to connect to
@@ -24,27 +35,76 @@ class ClientApp:
 
         print(f"Server set to {self.state.server['name']}")
         
-        self.tcp_client.register_user(self.state.server, self.state)
+        # self.tcp_client.register_user(self.state.server, self.state)
         
         # Register with the server
         while True:
             self.handle_command()
     
+    def authenticate_user(self):
+        while True:
+            print("Hi, please authenticate yourself:")
+            print(f"commands: /login  /register")
+            command = input(">> ").lower().strip()
+            command = command[1:] if command.startswith("/") else command
+            if command == "login":
+                name = self.ask_user_name()
+                login_info = self.tcp_client.login_user(self.state.server, name)
+                if login_info is None:
+                    continue
+
+                self.state.name = login_info["name"]
+                self.state.ip_address = login_info["ip_address"]
+                self.state.tcp_port = login_info["tcp_port"]
+                self.state.udp_port = login_info["udp_port"]
+                return
+
+            if command == "register":
+                self.state.name = self.ask_user_name()
+                self.state.tcp_port = self.ask_user_tcp_port()
+                self.state.udp_port = self.ask_user_udp_port()
+            
+                if self.tcp_client.register_user(self.state.server, self.state):
+                    return
     
     def handle_command(self):
         print("\n")
         print(f"commands: /register  /deregister")
-        command = input("Enter a command: ")
+        command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
-        if command.lower().strip() == "register":
+        if command == "register":
             self.tcp_client.register_user(self.state.server, self.state)
 
-        elif command.lower().strip() == "deregister":
+        elif command == "deregister":
             self.tcp_client.deregister_user(self.state.server, self.state)
         else:
             self.tcp_client.send_message(self.state.server, command)
         return command
 
+    @staticmethod
+    def ask_user_tcp_port():
+        while True:
+            try:
+                port = int(input("Enter your tcp: "))
+                if 0 <= port <= 65535:
+                    return port
+            except ValueError:
+                pass  # Fall through to the error message below
+
+            print("Invalid port, please enter an integer between 0 and 65535.")
+
+    @staticmethod
+    def ask_user_udp_port():
+        while True:
+            try:
+                port = int(input("Enter your udp port: "))
+                if 0 <= port <= 65535:
+                    return port
+            except ValueError:
+                pass  # Fall through to the error message below
+
+            print("Invalid port, please enter an integer between 0 and 65535.")
+            
     @staticmethod
     def ask_user_name():
         return input("Enter your name: ")

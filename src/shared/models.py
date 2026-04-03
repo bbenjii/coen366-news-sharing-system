@@ -32,3 +32,23 @@ class DeregisterModel:
     rq: str
     name: str
 
+
+@dataclass
+class LoginModel:
+    rq: str
+    name: str
+
+
+@dataclass
+class LoginConfirmedModel:
+    rq: str
+    name: str
+    ip_address: str
+    tcp_port: int
+    udp_port: int
+
+
+@dataclass
+class LoginDeniedModel:
+    rq: str
+    reason: str

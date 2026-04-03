@@ -2,6 +2,7 @@ import socket
 import threading
 
 from src.shared import protocol
+from src.shared.models import LoginConfirmedModel, LoginDeniedModel
 from src.server.persistence import ServerPersistence
 
 
@@ -107,6 +108,33 @@ class TcpServer:
         self.persistence.save_users(self.registered_users)
         print(f"[server] User {name} deregistered")
 
+    def login_user(self, connection, data):
+        login = protocol.parse_login(data.decode())
+        print(f"[server] Login request: {login}")
+        name = login["name"]
+
+        self.registered_users = self.persistence.load_users()
+        if name not in self.registered_users:
+            print(f"[server] Login denied for unknown user {name}")
+            payload = protocol.serialize_login_denied(
+                LoginDeniedModel(rq=str(login["request_id"]), reason="user_not_found")
+            )
+            connection.sendall(payload.encode())
+            return
+
+        user = self.registered_users[name]
+        payload = protocol.serialize_login_confirmed(
+            LoginConfirmedModel(
+                rq=str(login["request_id"]),
+                name=name,
+                ip_address=user["ip_address"],
+                tcp_port=user["tcp_port"],
+                udp_port=user["udp_port"],
+            )
+        )
+        print(f"[server] Login confirmed for {name}")
+        connection.sendall(payload.encode())
+
     def handle_client_connection(self, connection, client_address):
         try:
             connection.sendall(b"hello")
@@ -125,6 +153,8 @@ class TcpServer:
 
             if command == b"REGISTER":
                 self.register_user(connection, data)
+            elif command == b"LOGIN":
+                self.login_user(connection, data)
             elif command == b"DE-REGISTER":
                 self.deregister_user(data)
             else:

@@ -1,4 +1,4 @@
-from src.shared import DeregisterModel, RegisterModel
+from src.shared import DeregisterModel, LoginConfirmedModel, LoginDeniedModel, LoginModel, RegisterModel
 
 def serialize_register(request: RegisterModel):
     return (
@@ -53,4 +53,49 @@ def parse_deregister(message):
         "command": parts[0],
         "request_id": int(parts[1]),
         "name": parts[2],
+    }
+
+
+def serialize_login(request: LoginModel):
+    return f"LOGIN {request.rq} {request.name}"
+
+
+def parse_login(message):
+    parts = message.strip().split()
+    return {
+        "command": parts[0],
+        "request_id": int(parts[1]),
+        "name": parts[2],
+    }
+
+
+def serialize_login_confirmed(response: LoginConfirmedModel):
+    return (
+        f"LOGIN-CONFIRMED {response.rq} {response.name} "
+        f"{response.ip_address} {response.tcp_port} {response.udp_port}"
+    )
+
+
+def parse_login_confirmed(message):
+    parts = message.strip().split()
+    return {
+        "command": parts[0],
+        "request_id": int(parts[1]),
+        "name": parts[2],
+        "ip_address": parts[3],
+        "tcp_port": int(parts[4]),
+        "udp_port": int(parts[5]),
+    }
+
+
+def serialize_login_denied(response: LoginDeniedModel):
+    return f"LOGIN-DENIED {response.rq} {response.reason}"
+
+
+def parse_login_denied(message):
+    parts = message.strip().split()
+    return {
+        "command": parts[0],
+        "request_id": int(parts[1]),
+        "reason": parts[2],
     }
