@@ -81,6 +81,12 @@ class ClientApp:
         self.state = ClientState(server=server, rq="REGISTER", ip_address="127.0.0.1", subjects=[])
         print("Logged out.")
         self.authenticate_user()
+
+    def change_server(self):
+        new_server = self.ask_user_server()
+        self.state = ClientState(server=new_server, rq="REGISTER", ip_address="127.0.0.1", subjects=[])
+        print(f"Server changed to {self.state.server['name']}")
+        self.authenticate_user()
     
     def print_state_summary(self):
         summary_lines = [
@@ -115,7 +121,13 @@ class ClientApp:
     def handle_command(self):
         print("\n")
         self.print_state_summary()
-        print(f"commands: /register  /update  /subjects  /deregister  /logout")
+        print("Commands:")
+        print("/register   Register the current user on this server.")
+        print("/update     Update this user's IP address and ports.")
+        print("/subjects   Update this user's subjects of interest.")
+        print("/deregister Remove this user from the current server.")
+        print("/logout     Clear the current session and authenticate again.")
+        print("/server     Switch to another server and authenticate there.")
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
@@ -145,6 +157,8 @@ class ClientApp:
             self.tcp_client.deregister_user(self.state.server, self.state)
         elif command == "logout":
             self.logout_user()
+        elif command == "server":
+            self.change_server()
         else:
             self.tcp_client.send_message(self.state.server, command)
         return command
