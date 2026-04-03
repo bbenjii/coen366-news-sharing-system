@@ -1,0 +1,15 @@
+bind_host = "localhost"
+
+SERVER_A = {
+    "name": "Server A",
+    "bind_host": bind_host,
+    "tcp_port": 10000,
+    "udp_port": 20000,
+}
+
+SERVER_B = {
+    "name": "Server B",
+    "bind_host": bind_host,
+    "tcp_port": 10001,
+    "udp_port": 20001,
+}
