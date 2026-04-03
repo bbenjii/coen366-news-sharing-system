@@ -41,8 +41,9 @@ class TcpClient:
                 tcp_socket.sendall(payload.encode())
 
                 res = tcp_socket.recv(1024)
-                print(f"[client] Received response from server: {res.decode()}")
-                return True
+                response = res.decode()
+                print(f"[client] Received response from server: {response}")
+                return response.startswith("REGISTERED ")
         except ConnectionRefusedError:
             server_address = (server_config["bind_host"], server_config["tcp_port"])
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")
