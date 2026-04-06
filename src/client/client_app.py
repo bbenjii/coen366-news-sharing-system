@@ -27,8 +27,6 @@ class ClientApp:
 
         # Set the user's name
         if self.state.name is None:
-            # self.state.name = self.ask_user_name()
-            # print(f"Name set to {self.state.name}")
             self.authenticate_user()
         else:
             login_info = self.tcp_client.login_user(self.state.server, self.state.name)
