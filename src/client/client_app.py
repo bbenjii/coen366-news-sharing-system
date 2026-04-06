@@ -1,15 +1,17 @@
 from src.client.state import ClientState
 from src.client.tcp_client import TcpClient
-from src.shared.config import ALLOWED_SUBJECTS, SERVER_A, SERVER_B
+from src.shared.config import ALLOWED_SUBJECTS, SERVER_A, SERVER_B, get_local_ip
 
 
 class ClientApp:
     def __init__(self, name=None, server=None):
+        self.local_ip = get_local_ip()
+        print(f"Local IP: {self.local_ip}")
         self.state = ClientState(
             name=name,
             server=server,
             rq="REGISTER",
-            ip_address="127.0.0.1",
+            ip_address=self.local_ip,
             subjects=[],
         )
         self.tcp_client = TcpClient()
@@ -68,7 +70,7 @@ class ClientApp:
 
             if command == "register":
                 self.state.name = self.ask_user_name()
-                # self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
+                self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
                 self.state.tcp_port = self.ask_user_tcp_port()
                 self.state.udp_port = self.ask_user_udp_port()
             
@@ -77,13 +79,13 @@ class ClientApp:
 
     def logout_user(self):
         server = self.state.server
-        self.state = ClientState(server=server, rq="REGISTER", ip_address="127.0.0.1", subjects=[])
+        self.state = ClientState(server=server, rq="REGISTER", ip_address=self.local_ip, subjects=[])
         print("Logged out.")
         self.authenticate_user()
 
     def change_server(self):
         new_server = self.ask_user_server()
-        self.state = ClientState(server=new_server, rq="REGISTER", ip_address="127.0.0.1", subjects=[])
+        self.state = ClientState(server=new_server, rq="REGISTER", ip_address=self.local_ip, subjects=[])
         print(f"Server changed to {self.state.server['name']}")
         self.print_server_summary()
         self.authenticate_user()
@@ -149,11 +151,12 @@ class ClientApp:
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
+            self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
             self.tcp_client.register_user(self.state.server, self.state)
         elif command == "update":
-            # self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
-            self.state.tcp_port = self.ask_user_tcp_port()
-            self.state.udp_port = self.ask_user_udp_port()
+            self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
+            self.state.tcp_port = self.ask_user_tcp_port(current_port=self.state.tcp_port)
+            self.state.udp_port = self.ask_user_udp_port(current_port=self.state.udp_port)
             update_info = self.tcp_client.update_user(self.state.server, self.state)
             if update_info is not None:
                 self.state.name = update_info["name"]
@@ -182,12 +185,22 @@ class ClientApp:
         return command
 
     @staticmethod
-    def ask_user_tcp_port():
-        return input("Enter your tcp: ").strip()
+    def ask_user_tcp_port(current_port = None):
+        prompt = "Enter your tcp address"
+        if current_port:
+            prompt += f" [{current_port}]"
+        prompt += ": "
+        value = input(prompt).strip()
+        return value or current_port
 
     @staticmethod
-    def ask_user_udp_port():
-        return input("Enter your udp port: ").strip()
+    def ask_user_udp_port(current_port = None):
+        prompt = "Enter your udp address"
+        if current_port:
+            prompt += f" [{current_port}]"
+        prompt += ": "
+        value = input(prompt).strip()
+        return value or current_port
             
     @staticmethod
     def ask_user_name():
@@ -229,4 +242,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print(get_local_ip())
     main()
