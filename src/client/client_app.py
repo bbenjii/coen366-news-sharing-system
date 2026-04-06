@@ -22,6 +22,7 @@ class ClientApp:
             self.state.server = self.ask_user_server()
 
         print(f"Server set to {self.state.server['name']}")
+        self.print_server_summary()
 
 
         # Set the user's name
@@ -86,7 +87,26 @@ class ClientApp:
         new_server = self.ask_user_server()
         self.state = ClientState(server=new_server, rq="REGISTER", ip_address="127.0.0.1", subjects=[])
         print(f"Server changed to {self.state.server['name']}")
+        self.print_server_summary()
         self.authenticate_user()
+
+    def print_server_summary(self):
+        summary_lines = [
+            ("Server", self.state.server["name"] if self.state.server else "Not set"),
+            ("Host", self.state.server["connect_host"] if self.state.server else "Not set"),
+            ("TCP Port", str(self.state.server["tcp_port"]) if self.state.server else "Not set"),
+            ("UDP Port", str(self.state.server["udp_port"]) if self.state.server else "Not set"),
+        ]
+        content_lines = [f"{label:<8}: {value}" for label, value in summary_lines]
+        inner_width = max(len("Server Config"), *(len(line) for line in content_lines))
+        border = "+" + "-" * (inner_width + 2) + "+"
+
+        print(border)
+        print(f"| {'Server Config':^{inner_width}} |")
+        print(border)
+        for line in content_lines:
+            print(f"| {line:<{inner_width}} |")
+        print(border)
     
     def print_state_summary(self):
         summary_lines = [
@@ -195,9 +215,13 @@ class ClientApp:
         while True:
             server_name = input("Enter the server to connect to, [A or B]: ").strip().lower()
             if server_name == "a":
-                return SERVER_A
+                server = dict(SERVER_A)
+                server["connect_host"] = input("Enter Server A IP address: ").strip()
+                return server
             if server_name == "b":
-                return SERVER_B
+                server = dict(SERVER_B)
+                server["connect_host"] = input("Enter Server B IP address: ").strip()
+                return server
             print("Invalid server, please enter A or B")
 
 
