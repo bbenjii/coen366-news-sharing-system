@@ -1,5 +1,6 @@
 from src.client.state import ClientState
 from src.client.tcp_client import TcpClient
+from src.client.udp_client import UdpClient
 from src.shared.config import ALLOWED_SUBJECTS, SERVER_A, SERVER_B, get_local_ip
 
 
@@ -15,6 +16,7 @@ class ClientApp:
             subjects=[],
         )
         self.tcp_client = TcpClient()
+        self.udp_client = UdpClient()
 
     def run(self):
         print("___Client has started___")
@@ -41,6 +43,7 @@ class ClientApp:
                 self.state.tcp_port = login_info["tcp_port"]
                 self.state.udp_port = login_info["udp_port"]
                 self.state.subjects = login_info["subjects"]
+                self.udp_client.start_listener(self.state)
                 
         print(f"Hi, {self.state.name}!")
 
@@ -66,6 +69,7 @@ class ClientApp:
                 self.state.tcp_port = login_info["tcp_port"]
                 self.state.udp_port = login_info["udp_port"]
                 self.state.subjects = login_info["subjects"]
+                self.udp_client.start_listener(self.state)
                 return
 
             if command == "register":
@@ -75,15 +79,18 @@ class ClientApp:
                 self.state.udp_port = self.ask_user_udp_port()
             
                 if self.tcp_client.register_user(self.state.server, self.state):
+                    self.udp_client.start_listener(self.state)
                     return
 
     def logout_user(self):
+        self.udp_client.stop_listener()
         server = self.state.server
         self.state = ClientState(server=server, rq="REGISTER", ip_address=self.local_ip, subjects=[])
         print("Logged out.")
         self.authenticate_user()
 
     def change_server(self):
+        self.udp_client.stop_listener()
         new_server = self.ask_user_server()
         self.state = ClientState(server=new_server, rq="REGISTER", ip_address=self.local_ip, subjects=[])
         print(f"Server changed to {self.state.server['name']}")
@@ -148,6 +155,7 @@ class ClientApp:
         print("/deregister Remove this user from the current server.")
         print("/logout     Clear the current session and authenticate again.")
         print("/server     Switch to another server and authenticate there.")
+        print("/publish    Publish news over UDP.")
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
@@ -164,6 +172,7 @@ class ClientApp:
                 self.state.tcp_port = update_info["tcp_port"]
                 self.state.udp_port = update_info["udp_port"]
                 self.state.subjects = update_info["subjects"]
+                self.udp_client.start_listener(self.state)
         elif command == "subjects":
             previous_subjects = list(self.state.subjects or [])
             self.state.subjects = self.ask_user_subjects()
@@ -175,7 +184,13 @@ class ClientApp:
                 self.state.subjects = previous_subjects
 
         elif command == "deregister":
-            self.tcp_client.deregister_user(self.state.server, self.state)
+            if self.tcp_client.deregister_user(self.state.server, self.state):
+                self.udp_client.stop_listener()
+        elif command == "publish":
+            subject = self.ask_publish_subject()
+            title = input("Enter title: ").strip()
+            text = input("Enter text: ").strip()
+            self.udp_client.publish_news(self.state.server, self.state, subject, title, text)
         elif command == "logout":
             self.logout_user()
         elif command == "server":
@@ -220,6 +235,10 @@ class ClientApp:
         print(f"Available subjects: {', '.join(ALLOWED_SUBJECTS)}")
         raw_subjects = input("Enter subjects separated by commas: ").strip().lower()
         return [subject.strip() for subject in raw_subjects.split(",") if subject.strip()]
+
+    @staticmethod
+    def ask_publish_subject():
+        return input("Enter publish subject: ").strip().lower()
 
     @staticmethod
     def ask_user_server():

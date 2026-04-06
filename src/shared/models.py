@@ -99,3 +99,34 @@ class SubjectsRejectedModel:
     rq: str
     name: str
     subjects: list[str]
+
+
+@dataclass
+class PublishModel:
+    rq: str
+    name: str
+    subject: str
+    title: str
+    text: str
+
+
+@dataclass
+class PublishDeniedModel:
+    rq: str
+    reason: str
+
+
+@dataclass
+class MessageModel:
+    name: str
+    subject: str
+    title: str
+    text: str
+
+
+@dataclass
+class ForwardModel:
+    name: str
+    subject: str
+    title: str
+    text: str

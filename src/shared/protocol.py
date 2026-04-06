@@ -1,9 +1,13 @@
 from src.shared import (
     ALLOWED_SUBJECTS,
     DeregisterModel,
+    ForwardModel,
     LoginConfirmedModel,
     LoginDeniedModel,
     LoginModel,
+    MessageModel,
+    PublishDeniedModel,
+    PublishModel,
     RegisterModel,
     SubjectsModel,
     SubjectsRejectedModel,
@@ -12,6 +16,7 @@ from src.shared import (
     UpdateDeniedModel,
     UpdateModel,
 )
+import json
 import ipaddress
 
 
@@ -236,6 +241,57 @@ def parse_subjects_rejected(message):
         "name": parts[2],
         "subjects": _parse_subjects(parts[3] if len(parts) > 3 else ""),
     }
+
+
+def serialize_publish(request: PublishModel):
+    return json.dumps(
+        {
+            "command": "PUBLISH",
+            "request_id": request.rq,
+            "name": request.name,
+            "subject": request.subject,
+            "title": request.title,
+            "text": request.text,
+        }
+    )
+
+
+def serialize_publish_denied(response: PublishDeniedModel):
+    return json.dumps(
+        {
+            "command": "PUBLISH-DENIED",
+            "request_id": response.rq,
+            "reason": response.reason,
+        }
+    )
+
+
+def serialize_message(message: MessageModel):
+    return json.dumps(
+        {
+            "command": "MESSAGE",
+            "name": message.name,
+            "subject": message.subject,
+            "title": message.title,
+            "text": message.text,
+        }
+    )
+
+
+def serialize_forward(message: ForwardModel):
+    return json.dumps(
+        {
+            "command": "FORWARD",
+            "name": message.name,
+            "subject": message.subject,
+            "title": message.title,
+            "text": message.text,
+        }
+    )
+
+
+def parse_udp_message(message: str):
+    return json.loads(message)
 
 
 def is_valid_ip_address(value: str):
