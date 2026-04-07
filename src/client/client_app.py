@@ -1,7 +1,8 @@
 from src.client.state import ClientState
 from src.client.tcp_client import TcpClient
 from src.shared.config import ALLOWED_SUBJECTS, SERVER_A, SERVER_B
-
+from src.client.udp_client import UdpClient
+import threading
 
 class ClientApp:
     def __init__(self, name=None, server=None):
@@ -13,6 +14,7 @@ class ClientApp:
             subjects=[],
         )
         self.tcp_client = TcpClient()
+
 
     def run(self):
         print("___Client has started___")
@@ -42,6 +44,13 @@ class ClientApp:
                 self.state.subjects = login_info["subjects"]
                 
         print(f"Hi, {self.state.name}!")
+
+        self.udp_client = UdpClient(
+            self.state.ip_address,
+            self.state.udp_port
+        )
+
+        threading.Thread(target=self.udp_client.listen, daemon=True).start()
 
         
         # Register with the server
@@ -128,6 +137,8 @@ class ClientApp:
         print("/deregister Remove this user from the current server.")
         print("/logout     Clear the current session and authenticate again.")
         print("/server     Switch to another server and authenticate there.")
+        print("/publish    Publish a message (UDP)")
+        print("/comment    Comment on a message (UDP)")
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
@@ -159,17 +170,41 @@ class ClientApp:
             self.logout_user()
         elif command == "server":
             self.change_server()
+        elif command == "publish":
+            subject = input("Subject: ")
+            title = input("Title: ")
+            text = input("Text: ")
+
+            self.udp_client.publish(
+                self.state.server,
+                self.state.name,
+                "1",
+                subject,
+                title,
+                text
+            )
+        elif command == "comment":
+            subject = input("Subject: ")
+            title = input("Title: ")
+            text = input("Comment: ")
+
+            message = f"PUBLISH-COMMENT {self.state.name} {subject} {title} {text}"
+
+            self.udp_client.socket.sendto(
+                message.encode(),
+                (self.state.server["bind_host"], self.state.server["udp_port"])
+            )
         else:
             self.tcp_client.send_message(self.state.server, command)
         return command
 
     @staticmethod
     def ask_user_tcp_port():
-        return input("Enter your tcp: ").strip()
+        return int(input("Enter your tcp: ").strip())
 
     @staticmethod
     def ask_user_udp_port():
-        return input("Enter your udp port: ").strip()
+        return int(input("Enter your udp port: ").strip())
             
     @staticmethod
     def ask_user_name():

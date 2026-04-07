@@ -248,3 +248,38 @@ def is_valid_ip_address(value: str):
 
 def is_valid_port(value):
     return isinstance(value, int) and 1 <= value <= 65535
+
+def parse_publish(message):
+    parts = message.strip().split(maxsplit=5)
+
+    if len(parts) < 6:
+        return None
+
+    return {
+        "command": parts[0],
+        "request_id": parts[1],
+        "name": parts[2],
+        "subject": parts[3],
+        "title": parts[4],
+        "text": parts[5],
+    }
+
+def serialize_message(name, subject, title, text):
+    return f"MESSAGE {name} {subject} {title} {text}"
+
+def parse_publish_comment(message):
+    parts = message.strip().split(maxsplit=4)
+    return {
+        "command": parts[0],
+        "name": parts[1],
+        "subject": parts[2],
+        "title": parts[3],
+        "text": parts[4],
+    }
+
+
+def serialize_comment(name, subject, title, text):
+    return f"COMMENT {name} {subject} {title} {text}"
+
+def serialize_publish_denied(rq, reason):
+    return f"PUBLISH-DENIED {rq} {reason}"
