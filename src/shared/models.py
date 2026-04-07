@@ -130,3 +130,19 @@ class ForwardModel:
     subject: str
     title: str
     text: str
+
+
+@dataclass
+class PublishCommentModel:
+    name: str
+    subject: str
+    title: str
+    text: str
+
+
+@dataclass
+class CommentModel:
+    name: str
+    subject: str
+    title: str
+    text: str

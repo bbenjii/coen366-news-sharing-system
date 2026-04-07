@@ -2,7 +2,7 @@ import socket
 
 from src.server.persistence import ServerPersistence
 from src.shared import protocol
-from src.shared.models import ForwardModel, MessageModel, PublishDeniedModel
+from src.shared.models import CommentModel, ForwardModel, MessageModel, PublishCommentModel, PublishDeniedModel
 
 
 class UdpServer:
@@ -32,6 +32,8 @@ class UdpServer:
                 self.handle_publish(message, sender_address)
             elif command == "FORWARD":
                 self.handle_forward(message)
+            elif command == "PUBLISH-COMMENT":
+                self.handle_publish_comment(message)
             else:
                 print(f"[server] Unsupported UDP command: {message}")
 
@@ -59,6 +61,29 @@ class UdpServer:
     def handle_forward(self, message):
         self.deliver_to_local_users(message["name"], message["subject"], message["title"], message["text"])
 
+    def handle_publish_comment(self, message):
+        users = self.persistence.load_users()
+        name = message["name"]
+        subject = message["subject"]
+        from_peer = message.get("origin") == "peer"
+
+        if not from_peer and name not in users:
+            print(f"[server] Ignoring comment from unregistered user {name}")
+            return
+
+        if subject not in protocol.ALLOWED_SUBJECTS:
+            print(f"[server] Ignoring comment with invalid subject {subject}")
+            return
+
+        if not from_peer and subject not in users[name].get("subjects", []):
+            print(f"[server] Ignoring comment from {name} on unsubscribed subject {subject}")
+            return
+
+        self.deliver_comment_to_local_users(name, subject, message["title"], message["text"])
+
+        if not from_peer:
+            self.forward_comment_to_peer(name, subject, message["title"], message["text"])
+
     def deliver_to_local_users(self, name: str, subject: str, title: str, text: str):
         users = self.persistence.load_users()
         payload = protocol.serialize_message(
@@ -73,6 +98,20 @@ class UdpServer:
             print(f"[server] Sending UDP to {username} at {target_address}: {payload}")
             self.udp_socket.sendto(payload.encode(), target_address)
 
+    def deliver_comment_to_local_users(self, name: str, subject: str, title: str, text: str):
+        users = self.persistence.load_users()
+        payload = protocol.serialize_comment(
+            CommentModel(name=name, subject=subject, title=title, text=text)
+        )
+
+        for username, user in users.items():
+            if subject not in user.get("subjects", []):
+                continue
+
+            target_address = (user["ip_address"], int(user["udp_port"]))
+            print(f"[server] Sending UDP comment to {username} at {target_address}: {payload}")
+            self.udp_socket.sendto(payload.encode(), target_address)
+
     def forward_to_peer(self, name: str, subject: str, title: str, text: str):
         if not self.peer_server_config or not self.peer_server_config.get("connect_host"):
             return
@@ -85,6 +124,21 @@ class UdpServer:
             ForwardModel(name=name, subject=subject, title=title, text=text)
         )
         print(f"[server] Forwarding UDP to peer {target_address}: {payload}")
+        self.udp_socket.sendto(payload.encode(), target_address)
+
+    def forward_comment_to_peer(self, name: str, subject: str, title: str, text: str):
+        if not self.peer_server_config or not self.peer_server_config.get("connect_host"):
+            return
+
+        target_address = (
+            self.peer_server_config["connect_host"],
+            self.peer_server_config["udp_port"],
+        )
+        payload = protocol.serialize_publish_comment(
+            PublishCommentModel(name=name, subject=subject, title=title, text=text),
+            origin="peer",
+        )
+        print(f"[server] Forwarding UDP comment to peer {target_address}: {payload}")
         self.udp_socket.sendto(payload.encode(), target_address)
 
     def send_publish_denied(self, sender_address, request_id, reason: str):

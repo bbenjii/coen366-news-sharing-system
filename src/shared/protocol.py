@@ -1,11 +1,13 @@
 from src.shared import (
     ALLOWED_SUBJECTS,
+    CommentModel,
     DeregisterModel,
     ForwardModel,
     LoginConfirmedModel,
     LoginDeniedModel,
     LoginModel,
     MessageModel,
+    PublishCommentModel,
     PublishDeniedModel,
     PublishModel,
     RegisterModel,
@@ -286,6 +288,31 @@ def serialize_forward(message: ForwardModel):
             "subject": message.subject,
             "title": message.title,
             "text": message.text,
+        }
+    )
+
+
+def serialize_publish_comment(comment: PublishCommentModel, origin: str | None = None):
+    payload = {
+        "command": "PUBLISH-COMMENT",
+        "name": comment.name,
+        "subject": comment.subject,
+        "title": comment.title,
+        "text": comment.text,
+    }
+    if origin is not None:
+        payload["origin"] = origin
+    return json.dumps(payload)
+
+
+def serialize_comment(comment: CommentModel):
+    return json.dumps(
+        {
+            "command": "COMMENT",
+            "name": comment.name,
+            "subject": comment.subject,
+            "title": comment.title,
+            "text": comment.text,
         }
     )
 

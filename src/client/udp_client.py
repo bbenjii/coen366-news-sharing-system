@@ -3,7 +3,7 @@ import threading
 
 from src.client.state import ClientState
 from src.shared import protocol
-from src.shared.models import PublishModel
+from src.shared.models import PublishCommentModel, PublishModel
 
 
 class UdpClient:
@@ -64,6 +64,11 @@ class UdpClient:
                     f"[client] MESSAGE from {message['name']} "
                     f"on {message['subject']}: {message['title']} | {message['text']}"
                 )
+            elif command == "COMMENT":
+                print(
+                    f"[client] COMMENT from {message['name']} "
+                    f"on {message['subject']} / {message['title']}: {message['text']}"
+                )
             elif command == "PUBLISH-DENIED":
                 print(
                     f"[client] Publish denied for request {message['request_id']}: "
@@ -77,6 +82,33 @@ class UdpClient:
         payload = protocol.serialize_publish(
             PublishModel(
                 rq="1",
+                name=client_state.name,
+                subject=subject,
+                title=title,
+                text=text,
+            )
+        )
+
+        try:
+            if self.listen_socket is not None:
+                print(f"[client] Sending UDP: {payload}")
+                self.listen_socket.sendto(payload.encode(), server_address)
+                return True
+
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
+                if client_state.udp_port is not None:
+                    udp_socket.bind(("0.0.0.0", int(client_state.udp_port)))
+                print(f"[client] Sending UDP: {payload}")
+                udp_socket.sendto(payload.encode(), server_address)
+                return True
+        except OSError as exc:
+            print(f"[client] UDP send failed: {exc}")
+            return False
+
+    def publish_comment(self, server_config, client_state: ClientState, subject: str, title: str, text: str):
+        server_address = (server_config["connect_host"], server_config["udp_port"])
+        payload = protocol.serialize_publish_comment(
+            PublishCommentModel(
                 name=client_state.name,
                 subject=subject,
                 title=title,

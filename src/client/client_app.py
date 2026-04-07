@@ -156,6 +156,7 @@ class ClientApp:
         print("/logout     Clear the current session and authenticate again.")
         print("/server     Switch to another server and authenticate there.")
         print("/publish    Publish news over UDP.")
+        print("/comment    Comment on a received news message over UDP.")
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
@@ -191,6 +192,11 @@ class ClientApp:
             title = input("Enter title: ").strip()
             text = input("Enter text: ").strip()
             self.udp_client.publish_news(self.state.server, self.state, subject, title, text)
+        elif command == "comment":
+            subject = self.ask_publish_subject()
+            title = input("Enter original message title: ").strip()
+            text = input("Enter comment: ").strip()
+            self.udp_client.publish_comment(self.state.server, self.state, subject, title, text)
         elif command == "logout":
             self.logout_user()
         elif command == "server":
