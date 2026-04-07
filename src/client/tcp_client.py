@@ -13,7 +13,7 @@ from src.shared.models import (
 class TcpClient:
     @staticmethod
     def _open_connection(server_config):
-        server_address = (server_config["bind_host"], server_config["tcp_port"])
+        server_address = (server_config["connect_host"], server_config["tcp_port"])
         tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tcp_socket.connect(server_address)
         print("[client] Connected to server.")
@@ -29,7 +29,7 @@ class TcpClient:
         tcp_socket.sendall(payload.encode())
 
     def send_message(self, server_config, message):
-        server_address = (server_config["bind_host"], server_config["tcp_port"])
+        server_address = (server_config["connect_host"], server_config["tcp_port"])
 
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcp_socket:
@@ -65,7 +65,7 @@ class TcpClient:
                 return command == "REGISTERED"
             
         except ConnectionRefusedError:
-            server_address = (server_config["bind_host"], server_config["tcp_port"])
+            server_address = (server_config["connect_host"], server_config["tcp_port"])
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")
         except OSError as exc:
             print(f"[client] TCP send failed: {exc}")
@@ -86,7 +86,7 @@ class TcpClient:
                 print(f"[client] Deregistration request completed for {client_state.name}")
                 return True
         except ConnectionRefusedError:
-            server_address = (server_config["bind_host"], server_config["tcp_port"])
+            server_address = (server_config["connect_host"], server_config["tcp_port"])
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")
         except OSError as exc:
             print(f"[client] TCP send failed: {exc}")
@@ -115,7 +115,7 @@ class TcpClient:
 
                 return protocol.parse_login_confirmed(response)
         except ConnectionRefusedError:
-            server_address = (server_config["bind_host"], server_config["tcp_port"])
+            server_address = (server_config["connect_host"], server_config["tcp_port"])
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")
         except OSError as exc:
             print(f"[client] TCP send failed: {exc}")
@@ -150,7 +150,7 @@ class TcpClient:
 
                 return protocol.parse_update_confirmed(response)
         except ConnectionRefusedError:
-            server_address = (server_config["bind_host"], server_config["tcp_port"])
+            server_address = (server_config["connect_host"], server_config["tcp_port"])
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")
         except OSError as exc:
             print(f"[client] TCP send failed: {exc}")
@@ -186,7 +186,7 @@ class TcpClient:
 
                 return protocol.parse_subjects_updated(response)
         except ConnectionRefusedError:
-            server_address = (server_config["bind_host"], server_config["tcp_port"])
+            server_address = (server_config["connect_host"], server_config["tcp_port"])
             print(f"[client] Could not connect to {server_config['name']} at {server_address}")
         except OSError as exc:
             print(f"[client] TCP send failed: {exc}")
