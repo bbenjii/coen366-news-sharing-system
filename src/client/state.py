@@ -1,12 +1,13 @@
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
 class ClientState:
-    name: str | None = None
-    server: dict | None = None
-    rq: str | None = None
-    ip_address: str | None = None
-    tcp_port: int | None = None
-    udp_port: int | None = None
-    subjects: list[str] | None = None
+    name: Optional[str] = None
+    server: Optional[Dict[str, Any]] = None
+    rq: Optional[str] = None
+    ip_address: Optional[str] = None
+    tcp_port: Optional[int] = None
+    udp_port: Optional[int] = None
+    subjects: Optional[List[str]] = None
