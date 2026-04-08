@@ -18,6 +18,14 @@ class ClientApp:
         self.tcp_client = TcpClient()
         self.udp_client = UdpClient()
 
+    def _read_input(self, prompt=""):
+        value = input(prompt)
+        if value.strip().lower() == "exit":
+            print("Exiting client.")
+            self.udp_client.stop_listener()
+            raise SystemExit(0)
+        return value
+
     def run(self):
         print("___Client has started___")
 
@@ -56,7 +64,7 @@ class ClientApp:
         while True:
             print("Hi, please authenticate yourself:")
             print(f"commands: /login  /register")
-            command = input(">> ").lower().strip()
+            command = self._read_input(">> ").lower().strip()
             command = command[1:] if command.startswith("/") else command
             if command == "login":
                 name = self.ask_user_name()
@@ -157,7 +165,8 @@ class ClientApp:
         print("/server     Switch to another server and authenticate there.")
         print("/publish    Publish news over UDP.")
         print("/comment    Comment on a received news message over UDP.")
-        command = input(">> ").lower().strip()
+        print("exit        End the client.")
+        command = self._read_input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
         if command == "register":
             self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
@@ -189,13 +198,13 @@ class ClientApp:
                 self.udp_client.stop_listener()
         elif command == "publish":
             subject = self.ask_publish_subject()
-            title = input("Enter title: ").strip()
-            text = input("Enter text: ").strip()
+            title = self._read_input("Enter title: ").strip()
+            text = self._read_input("Enter text: ").strip()
             self.udp_client.publish_news(self.state.server, self.state, subject, title, text)
         elif command == "comment":
             subject = self.ask_publish_subject()
-            title = input("Enter original message title: ").strip()
-            text = input("Enter comment: ").strip()
+            title = self._read_input("Enter original message title: ").strip()
+            text = self._read_input("Enter comment: ").strip()
             self.udp_client.publish_comment(self.state.server, self.state, subject, title, text)
         elif command == "logout":
             self.logout_user()
@@ -205,58 +214,51 @@ class ClientApp:
             self.tcp_client.send_message(self.state.server, command)
         return command
 
-    @staticmethod
-    def ask_user_tcp_port(current_port = None):
+    def ask_user_tcp_port(self, current_port = None):
         prompt = "Enter your tcp address"
         if current_port:
             prompt += f" [{current_port}]"
         prompt += ": "
-        value = input(prompt).strip()
+        value = self._read_input(prompt).strip()
         return value or current_port
 
-    @staticmethod
-    def ask_user_udp_port(current_port = None):
+    def ask_user_udp_port(self, current_port = None):
         prompt = "Enter your udp address"
         if current_port:
             prompt += f" [{current_port}]"
         prompt += ": "
-        value = input(prompt).strip()
+        value = self._read_input(prompt).strip()
         return value or current_port
             
-    @staticmethod
-    def ask_user_name():
-        return input("Enter your name: ")
+    def ask_user_name(self):
+        return self._read_input("Enter your name: ")
 
-    @staticmethod
-    def ask_user_ip_address(default=None):
+    def ask_user_ip_address(self, default=None):
         prompt = "Enter your IP address"
         if default:
             prompt += f" [{default}]"
         prompt += ": "
-        value = input(prompt).strip()
+        value = self._read_input(prompt).strip()
         return value or default
 
-    @staticmethod
-    def ask_user_subjects():
+    def ask_user_subjects(self):
         print(f"Available subjects: {', '.join(ALLOWED_SUBJECTS)}")
-        raw_subjects = input("Enter subjects separated by commas: ").strip().lower()
+        raw_subjects = self._read_input("Enter subjects separated by commas: ").strip().lower()
         return [subject.strip() for subject in raw_subjects.split(",") if subject.strip()]
 
-    @staticmethod
-    def ask_publish_subject():
-        return input("Enter publish subject: ").strip().lower()
+    def ask_publish_subject(self):
+        return self._read_input("Enter publish subject: ").strip().lower()
 
-    @staticmethod
-    def ask_user_server():
+    def ask_user_server(self):
         while True:
-            server_name = input("Enter the server to connect to, [A or B]: ").strip().lower()
+            server_name = self._read_input("Enter the server to connect to, [A or B]: ").strip().lower()
             if server_name == "a":
                 server = dict(SERVER_A)
-                server["connect_host"] = input("Enter Server A IP address: ").strip()
+                server["connect_host"] = self._read_input("Enter Server A IP address: ").strip()
                 return server
             if server_name == "b":
                 server = dict(SERVER_B)
-                server["connect_host"] = input("Enter Server B IP address: ").strip()
+                server["connect_host"] = self._read_input("Enter Server B IP address: ").strip()
                 return server
             print("Invalid server, please enter A or B")
 

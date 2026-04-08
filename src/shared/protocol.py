@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from src.shared import (
     ALLOWED_SUBJECTS,
     CommentModel,

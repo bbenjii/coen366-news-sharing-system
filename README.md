@@ -20,7 +20,7 @@ The project currently uses only the Python standard library.
 
 ### Prerequisites
 
-- Python 3.10 or newer
+- Python 3.9 or newer
 
 ### Setup
 
