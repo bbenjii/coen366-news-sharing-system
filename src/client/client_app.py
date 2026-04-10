@@ -21,21 +21,18 @@ class ClientApp:
     def run(self):
         print("___Client has started___")
 
-        # Set server to connect to
         if self.state.server is None:
             self.state.server = self.ask_user_server()
 
         print(f"Server set to {self.state.server['name']}")
         self.print_server_summary()
 
-
-        # Set the user's name
         if self.state.name is None:
             self.authenticate_user()
         else:
             login_info = self.tcp_client.login_user(self.state.server, self.state.name)
             if login_info is None:
-                print(f"Failed to login, please authenticate yourself")
+                print("Failed to login, please authenticate yourself")
                 self.authenticate_user()
             else:
                 self.state.name = login_info["name"]
@@ -44,20 +41,19 @@ class ClientApp:
                 self.state.udp_port = login_info["udp_port"]
                 self.state.subjects = login_info["subjects"]
                 self.udp_client.start_listener(self.state)
-                
+
         print(f"Hi, {self.state.name}!")
 
-        
-        # Register with the server
         while True:
             self.handle_command()
-    
+
     def authenticate_user(self):
         while True:
             print("Hi, please authenticate yourself:")
-            print(f"commands: /login  /register")
+            print("commands: /login  /register")
             command = input(">> ").lower().strip()
             command = command[1:] if command.startswith("/") else command
+
             if command == "login":
                 name = self.ask_user_name()
                 login_info = self.tcp_client.login_user(self.state.server, name)
@@ -77,16 +73,25 @@ class ClientApp:
                 self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
                 self.state.tcp_port = self.ask_user_tcp_port()
                 self.state.udp_port = self.ask_user_udp_port()
-            
+
                 if self.tcp_client.register_user(self.state.server, self.state):
                     self.udp_client.start_listener(self.state)
                     return
 
-    def logout_user(self):
+    def reset_session(self, message=None):
         self.udp_client.stop_listener()
         server = self.state.server
-        self.state = ClientState(server=server, rq="REGISTER", ip_address=self.local_ip, subjects=[])
-        print("Logged out.")
+        self.state = ClientState(
+            server=server,
+            rq="REGISTER",
+            ip_address=self.local_ip,
+            subjects=[],
+        )
+        if message:
+            print(message)
+
+    def logout_user(self):
+        self.reset_session("Logged out.")
         self.authenticate_user()
 
     def change_server(self):
@@ -114,7 +119,7 @@ class ClientApp:
         for line in content_lines:
             print(f"| {line:<{inner_width}} |")
         print(border)
-    
+
     def print_state_summary(self):
         summary_lines = [
             ("Server", self.state.server["name"] if self.state.server else "Not set"),
@@ -124,16 +129,7 @@ class ClientApp:
             ("UDP", str(self.state.udp_port) if self.state.udp_port is not None else "Not set"),
             ("Subjects", ", ".join(self.state.subjects or []) or "Not set"),
         ]
-        endpoint = (
-            f"{self.state.ip_address}:{self.state.tcp_port} (TCP) | "
-            f"{self.state.ip_address}:{self.state.udp_port} (UDP)"
-            if self.state.ip_address is not None
-            and self.state.tcp_port is not None
-            and self.state.udp_port is not None
-            else "Not available"
-        )
         content_lines = [f"{label:<8}: {value}" for label, value in summary_lines]
-        # content_lines.append(f"Endpoint: {endpoint}")
         inner_width = max(len("Client State"), *(len(line) for line in content_lines))
         border = "+" + "-" * (inner_width + 2) + "+"
 
@@ -143,8 +139,7 @@ class ClientApp:
         for line in content_lines:
             print(f"| {line:<{inner_width}} |")
         print(border)
-        
-        
+
     def handle_command(self):
         print("\n")
         self.print_state_summary()
@@ -159,13 +154,24 @@ class ClientApp:
         print("/comment    Comment on a received news message over UDP.")
         command = input(">> ").lower().strip()
         command = command[1:] if command.startswith("/") else command
+
         if command == "register":
             self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
             self.tcp_client.register_user(self.state.server, self.state)
+
         elif command == "update":
-            self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
-            self.state.tcp_port = self.ask_user_tcp_port(current_port=self.state.tcp_port)
-            self.state.udp_port = self.ask_user_udp_port(current_port=self.state.udp_port)
+            previous_ip = self.state.ip_address
+            previous_tcp = self.state.tcp_port
+            previous_udp = self.state.udp_port
+
+            new_ip = self.ask_user_ip_address(default=self.state.ip_address)
+            new_tcp = self.ask_user_tcp_port(current_port=self.state.tcp_port)
+            new_udp = self.ask_user_udp_port(current_port=self.state.udp_port)
+
+            self.state.ip_address = new_ip
+            self.state.tcp_port = new_tcp
+            self.state.udp_port = new_udp
+
             update_info = self.tcp_client.update_user(self.state.server, self.state)
             if update_info is not None:
                 self.state.name = update_info["name"]
@@ -174,6 +180,11 @@ class ClientApp:
                 self.state.udp_port = update_info["udp_port"]
                 self.state.subjects = update_info["subjects"]
                 self.udp_client.start_listener(self.state)
+            else:
+                self.state.ip_address = previous_ip
+                self.state.tcp_port = previous_tcp
+                self.state.udp_port = previous_udp
+
         elif command == "subjects":
             previous_subjects = list(self.state.subjects or [])
             self.state.subjects = self.ask_user_subjects()
@@ -184,29 +195,46 @@ class ClientApp:
             else:
                 self.state.subjects = previous_subjects
 
+        
+        
         elif command == "deregister":
             if self.tcp_client.deregister_user(self.state.server, self.state):
                 self.udp_client.stop_listener()
+                server = self.state.server
+                self.state = ClientState(
+                    server=server,
+                    rq="REGISTER",
+                    ip_address=self.local_ip,
+                    subjects=[],
+                )
+                print("User deregistered. Please login or register again.")
+                self.authenticate_user()
+
         elif command == "publish":
             subject = self.ask_publish_subject()
             title = input("Enter title: ").strip()
             text = input("Enter text: ").strip()
             self.udp_client.publish_news(self.state.server, self.state, subject, title, text)
+
         elif command == "comment":
             subject = self.ask_publish_subject()
             title = input("Enter original message title: ").strip()
             text = input("Enter comment: ").strip()
             self.udp_client.publish_comment(self.state.server, self.state, subject, title, text)
+
         elif command == "logout":
             self.logout_user()
+
         elif command == "server":
             self.change_server()
+
         else:
             self.tcp_client.send_message(self.state.server, command)
+
         return command
 
     @staticmethod
-    def ask_user_tcp_port(current_port = None):
+    def ask_user_tcp_port(current_port=None):
         prompt = "Enter your tcp address"
         if current_port:
             prompt += f" [{current_port}]"
@@ -215,14 +243,14 @@ class ClientApp:
         return value or current_port
 
     @staticmethod
-    def ask_user_udp_port(current_port = None):
+    def ask_user_udp_port(current_port=None):
         prompt = "Enter your udp address"
         if current_port:
             prompt += f" [{current_port}]"
         prompt += ": "
         value = input(prompt).strip()
         return value or current_port
-            
+
     @staticmethod
     def ask_user_name():
         return input("Enter your name: ")
@@ -258,14 +286,3 @@ class ClientApp:
                 server = dict(SERVER_B)
                 server["connect_host"] = input("Enter Server B IP address: ").strip()
                 return server
-            print("Invalid server, please enter A or B")
-
-
-def main():
-    client = ClientApp(name="Ben", server=SERVER_A)
-    client.run()
-
-
-if __name__ == "__main__":
-    print(get_local_ip())
-    main()
