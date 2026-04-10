@@ -20,9 +20,10 @@ from src.shared import (
 )
 import json
 import ipaddress
+from typing import List, Optional
 
 
-def _serialize_subjects(subjects: list[str]):
+def _serialize_subjects(subjects: List[str]):
     return ",".join(subjects)
 
 
@@ -292,7 +293,7 @@ def serialize_forward(message: ForwardModel):
     )
 
 
-def serialize_publish_comment(comment: PublishCommentModel, origin: str | None = None):
+def serialize_publish_comment(comment: PublishCommentModel, origin: Optional[str] = None):
     payload = {
         "command": "PUBLISH-COMMENT",
         "name": comment.name,
