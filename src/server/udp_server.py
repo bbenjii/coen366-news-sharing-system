@@ -11,8 +11,12 @@ class UdpServer:
         self.peer_server_config = peer_server_config
         self.server_address = (server_config["bind_host"], server_config["udp_port"])
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.udp_socket.bind(self.server_address)
+        try:
+            self.udp_socket.bind(self.server_address)
+        except OSError:
+            print("UDP port already in use. Server already running.")
+            exit()
+
         self.persistence = ServerPersistence(server_config["name"])
 
     def run(self):
