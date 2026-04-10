@@ -2,6 +2,7 @@ from src.client.state import ClientState
 from src.client.tcp_client import TcpClient
 from src.client.udp_client import UdpClient
 from src.shared.config import ALLOWED_SUBJECTS, SERVER_A, SERVER_B, get_local_ip
+from src.shared import protocol
 
 
 class ClientApp:
@@ -74,10 +75,40 @@ class ClientApp:
 
             if command == "register":
                 self.state.name = self.ask_user_name()
-                self.state.ip_address = self.ask_user_ip_address(default=self.state.ip_address)
-                self.state.tcp_port = self.ask_user_tcp_port()
-                self.state.udp_port = self.ask_user_udp_port()
-            
+
+                #  IP validation
+                while True:
+                    ip = self.ask_user_ip_address(default=self.state.ip_address)
+                    if protocol.is_valid_ip_address(ip):
+                        break
+                    else:
+                        print("Invalid IP address, try again.")
+
+                #  TCP port validation
+                while True:
+                    tcp_port = self.ask_user_tcp_port()
+
+                    if str(tcp_port).isdigit() and 1 <= int(tcp_port) <= 65535:
+                        tcp_port = int(tcp_port)
+                        break
+                    else:
+                        print("Invalid TCP port, try again.")
+
+                #  UDP port validation
+                while True:
+                    udp_port = self.ask_user_udp_port()
+
+                    if str(udp_port).isdigit() and 1 <= int(udp_port) <= 65535:
+                        udp_port = int(udp_port)
+                        break
+                    else:
+                        print("Invalid UDP port, try again.")
+
+                self.state.ip_address = ip
+                self.state.tcp_port = tcp_port
+                self.state.udp_port = udp_port
+
+                # 🔹 Try register
                 if self.tcp_client.register_user(self.state.server, self.state):
                     self.udp_client.start_listener(self.state)
                     return
